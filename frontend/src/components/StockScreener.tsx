@@ -158,7 +158,7 @@ const StockScreener: React.FC = () => {
                 </div>
 
                 <button 
-                  className="analyze-button"
+                  className="analyze-button-card"
                   onClick={() => window.location.href = `/?ticker=${stock.symbol}`}
                 >
                   Detailed Analysis →

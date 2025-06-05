@@ -242,24 +242,24 @@
   line-height: 1.6;
 }
 
-.analyze-button {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #667eea;
-  background-color: transparent;
-  border: 2px solid #667eea;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
+.analyze-button-card {
+
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+  
+    background-color: transparent;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s; 
+
 }
 
-.analyze-button:hover {
-  color: white;
-  background-color: #667eea;
-  transform: translateX(2px);
-}
+
 
 .failed-symbols {
   margin-top: 2rem;
