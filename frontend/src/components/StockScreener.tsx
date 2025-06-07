@@ -70,7 +70,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
         </button>
         {loading && (
           <p className="loading-note">
-            This may take {type === 'nasdaq100' ? '2-3' : type === 'sp500' ? '4-5' : '4-5'} minutes as we analyze all {type === 'nasdaq100' ? '100' : type === 'sp500' ? '500' : '7'} stocks...
+            This may take {type === 'nasdaq100' ? '2-3' : type === 'sp500' ? '4-5' : '1'} {type === 'mag7' ? 'minute' : 'minutes'} as we analyze all {type === 'nasdaq100' ? '100' : type === 'sp500' ? '500' : '7'} stocks...
           </p>
         )}
       </div>
