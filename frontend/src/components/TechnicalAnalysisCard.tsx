@@ -10,6 +10,7 @@ interface Props {
 const TechnicalAnalysisCard: React.FC<Props> = ({ technicalAnalysis, sentimentAnalysis }) => {
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
   const [showSentimentInfo, setShowSentimentInfo] = useState(false);
+  const [showNewsImpact, setShowNewsImpact] = useState(false);
 
   const getSignalClass = (signal: string) => {
     if (signal.includes('Bullish')) return 'Bullish';
@@ -217,64 +218,97 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
           </span>
         </div>
 
-        {/* News Articles Section */}
-        <div className="news-articles" style={{ marginTop: '1rem' }}>
-          <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.75rem' }}>Recent News Impact:</h4>
-          <div className="articles-list" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-            {(sentimentAnalysis.articles || []).map((article, index) => (
-              <a 
-                key={index}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  padding: '0.75rem',
-                  marginBottom: '0.5rem',
-                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}
-              >
-                <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.25rem', color: '#1a1a1a' }}>
-                  {article.title}
-                </div>
-                <div style={{ 
-                  fontSize: '0.8rem', 
-                  color: '#666',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <span>{article.source}</span>
-                  <span style={{ 
-                    color: article.sentiment > 0 ? '#10b981' : article.sentiment < 0 ? '#ef4444' : '#666',
-                    marginLeft: '0.5rem'
+        {/* Collapsible News Articles Section */}
+        <div style={{ marginTop: '1rem' }}>
+          <button
+            onClick={() => setShowNewsImpact(!showNewsImpact)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              backgroundColor: 'rgba(59, 130, 246, 0.05)',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              color: '#666',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}
+          >
+            <span>Recent News Impact</span>
+            <span style={{ 
+              transform: showNewsImpact ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+              fontSize: '1.2rem'
+            }}>
+              ▼
+            </span>
+          </button>
+
+          {showNewsImpact && (
+            <div className="news-articles" style={{ marginTop: '0.75rem' }}>
+              <div className="articles-list" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                {(sentimentAnalysis.articles || []).map((article, index) => (
+                  <a 
+                    key={index}
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'block',
+                      padding: '0.75rem',
+                      marginBottom: '0.5rem',
+                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                      borderRadius: '0.5rem',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}
+                  >
+                    <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.25rem', color: '#1a1a1a' }}>
+                      {article.title}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{article.source}</span>
+                      <span style={{ 
+                        color: article.sentiment > 0 ? '#10b981' : article.sentiment < 0 ? '#ef4444' : '#666',
+                        marginLeft: '0.5rem'
+                      }}>
+                        {article.sentiment > 0 ? '+' : ''}{(article.sentiment * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
+                      {formatDate(article.date)}
+                    </div>
+                  </a>
+                ))}
+                {(!sentimentAnalysis.articles || sentimentAnalysis.articles.length === 0) && (
+                  <div style={{ 
+                    padding: '1rem', 
+                    textAlign: 'center', 
+                    color: '#666',
+                    fontSize: '0.9rem',
+                    fontStyle: 'italic'
                   }}>
-                    {article.sentiment > 0 ? '+' : ''}{(article.sentiment * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
-                  {formatDate(article.date)}
-                </div>
-              </a>
-            ))}
-            {(!sentimentAnalysis.articles || sentimentAnalysis.articles.length === 0) && (
-              <div style={{ 
-                padding: '1rem', 
-                textAlign: 'center', 
-                color: '#666',
-                fontSize: '0.9rem',
-                fontStyle: 'italic'
-              }}>
-                No recent news articles available
+                    No recent news articles available
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

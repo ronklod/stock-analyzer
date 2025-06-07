@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
 
-const StockScreener: React.FC = () => {
+interface Props {
+  type: 'nasdaq100' | 'sp500';
+}
+
+const StockScreener: React.FC<Props> = ({ type }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ScreeningResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +16,7 @@ const StockScreener: React.FC = () => {
     setResults(null);
 
     try {
-      const response = await fetch('http://localhost:5001/api/screen/nasdaq100');
+      const response = await fetch(`http://localhost:5001/api/screen/${type}`);
       
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -38,11 +42,15 @@ const StockScreener: React.FC = () => {
     return `$${marketCap.toFixed(0)}`;
   };
 
+  const getIndexName = () => {
+    return type === 'nasdaq100' ? 'NASDAQ-100' : 'S&P 500';
+  };
+
   return (
     <div className="stock-screener">
       <div className="screener-header">
-        <h1>NASDAQ-100 Stock Screener</h1>
-        <p>Find the most attractive stocks from the NASDAQ-100 index based on technical and sentiment analysis</p>
+        <h1>{getIndexName()} Stock Screener</h1>
+        <p>Find the most attractive stocks from the {getIndexName()} index based on technical and sentiment analysis</p>
       </div>
 
       <div className="screener-controls">
@@ -54,7 +62,7 @@ const StockScreener: React.FC = () => {
           {loading ? (
             <>
               <div className="button-spinner" />
-              Analyzing NASDAQ-100 Stocks...
+              Analyzing {getIndexName()} Stocks...
             </>
           ) : (
             'Find Top Stocks'
@@ -62,7 +70,7 @@ const StockScreener: React.FC = () => {
         </button>
         {loading && (
           <p className="loading-note">
-            This may take 2-3 minutes as we analyze all 100 stocks...
+            This may take {type === 'nasdaq100' ? '2-3' : '4-5'} minutes as we analyze all {type === 'nasdaq100' ? '100' : '500'} stocks...
           </p>
         )}
       </div>
@@ -76,7 +84,7 @@ const StockScreener: React.FC = () => {
       {results && (
         <div className="screening-results">
           <div className="results-summary">
-            <h2>Top 10 Most Attractive NASDAQ-100 Stocks</h2>
+            <h2>Top 10 Most Attractive {getIndexName()} Stocks</h2>
             <p>Successfully analyzed {results.totalAnalyzed} stocks</p>
           </div>
 

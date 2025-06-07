@@ -176,27 +176,31 @@
 }
 
 .stock-scores {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 
 .score-item {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .score-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #666;
-  min-width: 90px;
+  text-align: center;
 }
 
 .score-bar {
-  flex: 1;
-  height: 8px;
+  height: 6px;
   background-color: #e0e0e0;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   position: relative;
 }
@@ -204,7 +208,7 @@
 .score-fill {
   height: 100%;
   transition: width 0.5s ease-out;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .score-fill.attractiveness {
@@ -223,8 +227,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #1a1a1a;
-  min-width: 45px;
-  text-align: right;
+  text-align: center;
 }
 
 .stock-description {
@@ -237,9 +240,27 @@
 
 .stock-description p {
   margin: 0;
+  height: 80px;
+  overflow-y: auto;
   color: #374151;
   font-size: 0.95rem;
   line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e2e8f0;
+}
+
+.stock-description p::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stock-description p::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+.stock-description p::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+  border-radius: 3px;
 }
 
 .analyze-button-card {

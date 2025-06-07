@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, List
 import uvicorn
 from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
+from sp500_analyzer import SP500Screener
 import logging
 import numpy as np
 import math
@@ -356,6 +357,55 @@ async def screen_nasdaq100():
         
     except Exception as e:
         logger.error(f"Error during NASDAQ-100 screening: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/screen/sp500", response_model=ScreeningResponse)
+async def screen_sp500():
+    """
+    Screen all S&P 500 stocks and return the top 10 most attractive ones
+    """
+    logger.info("Starting S&P 500 screening...")
+    
+    try:
+        # Create screener instance
+        screener = SP500Screener()
+        
+        # Run screening (this will take some time)
+        top_stocks_data = screener.screen_all_stocks(max_workers=5)  # Reduced workers to avoid rate limiting
+        
+        # Convert to response format
+        top_stocks = []
+        for stock in top_stocks_data:
+            top_stocks.append(TopStock(
+                symbol=stock['symbol'],
+                name=stock['name'],
+                sector=stock['sector'],
+                currentPrice=clean_float(stock['current_price']),
+                marketCap=clean_float(stock['market_cap']),
+                peRatio=clean_float(stock['pe_ratio']),
+                recommendation=stock['recommendation'],
+                combinedScore=clean_float(stock['combined_score']),
+                technicalScore=clean_float(stock['technical_score']),
+                sentimentScore=clean_float(stock['sentiment_score']),
+                confidence=clean_float(stock['confidence']),
+                pricePosition52w=clean_float(stock['price_position_52w']),
+                volumeRatio=clean_float(stock['volume_ratio']),
+                momentum20d=clean_float(stock['momentum_20d']),
+                attractivenessScore=clean_float(stock['attractiveness_score']),
+                description=stock['description']
+            ))
+        
+        response = ScreeningResponse(
+            topStocks=top_stocks,
+            totalAnalyzed=len(screener.results),
+            failedSymbols=screener.failed_symbols
+        )
+        
+        logger.info(f"Screening completed. Found {len(top_stocks)} top stocks.")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error during S&P 500 screening: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
