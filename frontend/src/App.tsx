@@ -68,7 +68,8 @@ function StockAnalyzer() {
         <nav style={{ marginTop: '1rem' }}>
           <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
           <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-          <Link to="/screener/sp500" style={{ color: 'white' }}>S&P 500 Screener</Link>
+          <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
+          <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
         </nav>
       </header>
 
@@ -143,7 +144,8 @@ function App() {
               <nav style={{ marginTop: '1rem' }}>
                 <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
                 <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-                <Link to="/screener/sp500" style={{ color: 'white' }}>S&P 500 Screener</Link>
+                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
+                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
               </nav>
             </header>
             <main className="App-main">
@@ -162,11 +164,32 @@ function App() {
               <nav style={{ marginTop: '1rem' }}>
                 <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
                 <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-                <Link to="/screener/sp500" style={{ color: 'white' }}>S&P 500 Screener</Link>
+                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
+                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
               </nav>
             </header>
             <main className="App-main">
               <StockScreener type="sp500" />
+            </main>
+            <footer className="App-footer">
+              <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
+            </footer>
+          </div>
+        } />
+        <Route path="/screener/mag7" element={
+          <div className="App">
+            <header className="App-header">
+              <h1>📈 Stock Analyzer</h1>
+              <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
+              <nav style={{ marginTop: '1rem' }}>
+                <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
+                <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
+                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
+                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
+              </nav>
+            </header>
+            <main className="App-main">
+              <StockScreener type="mag7" />
             </main>
             <footer className="App-footer">
               <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>

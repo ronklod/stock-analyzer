@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
 
 interface Props {
-  type: 'nasdaq100' | 'sp500';
+  type: 'nasdaq100' | 'sp500' | 'mag7';
 }
 
 const StockScreener: React.FC<Props> = ({ type }) => {
@@ -43,7 +43,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   };
 
   const getIndexName = () => {
-    return type === 'nasdaq100' ? 'NASDAQ-100' : 'S&P 500';
+    return type === 'nasdaq100' ? 'NASDAQ-100' : type === 'sp500' ? 'S&P 500' : 'MAG-7';
   };
 
   return (
@@ -70,7 +70,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
         </button>
         {loading && (
           <p className="loading-note">
-            This may take {type === 'nasdaq100' ? '2-3' : '4-5'} minutes as we analyze all {type === 'nasdaq100' ? '100' : '500'} stocks...
+            This may take {type === 'nasdaq100' ? '2-3' : type === 'sp500' ? '4-5' : '4-5'} minutes as we analyze all {type === 'nasdaq100' ? '100' : type === 'sp500' ? '500' : '7'} stocks...
           </p>
         )}
       </div>

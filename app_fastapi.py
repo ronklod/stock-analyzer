@@ -11,6 +11,7 @@ import uvicorn
 from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
 from sp500_analyzer import SP500Screener
+from mag7_analyzer import MAG7Screener
 import logging
 import numpy as np
 import math
@@ -406,6 +407,55 @@ async def screen_sp500():
         
     except Exception as e:
         logger.error(f"Error during S&P 500 screening: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/screen/mag7", response_model=ScreeningResponse)
+async def screen_mag7():
+    """
+    Screen all MAG7 stocks and return them ranked by attractiveness
+    """
+    logger.info("Starting MAG7 screening...")
+    
+    try:
+        # Create screener instance
+        screener = MAG7Screener()
+        
+        # Run screening
+        stocks_data = screener.screen_all_stocks()
+        
+        # Convert to response format
+        stocks = []
+        for stock in stocks_data:
+            stocks.append(TopStock(
+                symbol=stock['symbol'],
+                name=stock['name'],
+                sector=stock['sector'],
+                currentPrice=clean_float(stock['current_price']),
+                marketCap=clean_float(stock['market_cap']),
+                peRatio=clean_float(stock['pe_ratio']),
+                recommendation=stock['recommendation'],
+                combinedScore=clean_float(stock['combined_score']),
+                technicalScore=clean_float(stock['technical_score']),
+                sentimentScore=clean_float(stock['sentiment_score']),
+                confidence=clean_float(stock['confidence']),
+                pricePosition52w=clean_float(stock['price_position_52w']),
+                volumeRatio=clean_float(stock['volume_ratio']),
+                momentum20d=clean_float(stock['momentum_20d']),
+                attractivenessScore=clean_float(stock['attractiveness_score']),
+                description=stock['description']
+            ))
+        
+        response = ScreeningResponse(
+            topStocks=stocks,
+            totalAnalyzed=len(screener.results),
+            failedSymbols=screener.failed_symbols
+        )
+        
+        logger.info(f"Screening completed. Analyzed {len(stocks)} MAG7 stocks.")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error during MAG7 screening: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
