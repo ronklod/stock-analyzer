@@ -8,6 +8,7 @@ import StockChart from './components/StockChart';
 import StockScreener from './components/StockScreener';
 import './StockScreener.css';
 import { StockAnalysisResponse } from './types';
+import PriceTargetsCard from './components/PriceTargetsCard';
 
 function StockAnalyzer() {
   const [searchParams] = useSearchParams();
@@ -112,12 +113,23 @@ function StockAnalyzer() {
                 technicalAnalysis={analysisData.technicalAnalysis}
                 sentimentAnalysis={analysisData.sentimentAnalysis}
               />
+              <PriceTargetsCard 
+                priceTargets={{
+                  currentPrice: analysisData.priceTargets.current_price,
+                  stopLoss: analysisData.priceTargets.stop_loss,
+                  target1: analysisData.priceTargets.target_1,
+                  target2: analysisData.priceTargets.target_2,
+                  riskRewardRatio: analysisData.priceTargets.risk_reward,
+                }}
+                supportResistanceLevels={analysisData.supportResistanceLevels}
+              />
             </div>
             
             <div className="chart-section">
               <StockChart 
                 chartData={analysisData.chartData}
                 ticker={analysisData.ticker}
+                supportResistanceLevels={analysisData.supportResistanceLevels}
               />
             </div>
           </section>

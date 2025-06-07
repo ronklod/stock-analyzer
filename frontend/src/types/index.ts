@@ -76,12 +76,28 @@ export interface LatestData {
   sma50: number | null;
 }
 
+export interface SupportResistanceLevel {
+  price: number;
+  type: 'Support' | 'Resistance';  // Strict union type
+  strength: number;
+}
+
+export interface PriceTargets {
+  current_price: number;
+  stop_loss: number;
+  target_1: number;
+  target_2: number;
+  risk_reward: number;
+}
+
 export interface StockAnalysisResponse {
   ticker: string;
   companyInfo: CompanyInfo;
   technicalAnalysis: TechnicalAnalysis;
   sentimentAnalysis: SentimentAnalysis;
   recommendation: Recommendation;
+  priceTargets: PriceTargets;
+  supportResistanceLevels: SupportResistanceLevel[];
   chartData: ChartData;
   latestData: LatestData;
 }

@@ -15,6 +15,8 @@ from mag7_analyzer import MAG7Screener
 import logging
 import numpy as np
 import math
+from enum import Enum
+import pandas as pd
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -107,12 +109,30 @@ class LatestData(BaseModel):
     sma20: Optional[float]
     sma50: Optional[float]
 
+class SupportResistanceType(str, Enum):
+    SUPPORT = 'Support'
+    RESISTANCE = 'Resistance'
+
+class SupportResistanceLevel(BaseModel):
+    price: float
+    type: SupportResistanceType
+    strength: float
+
+class PriceTargets(BaseModel):
+    current_price: float
+    stop_loss: float
+    target_1: float
+    target_2: float
+    risk_reward: float
+
 class StockAnalysisResponse(BaseModel):
     ticker: str
     companyInfo: CompanyInfo
     technicalAnalysis: TechnicalAnalysis
     sentimentAnalysis: SentimentAnalysis
     recommendation: Recommendation
+    priceTargets: PriceTargets
+    supportResistanceLevels: List[SupportResistanceLevel]
     chartData: ChartData
     latestData: LatestData
 
@@ -217,6 +237,50 @@ async def analyze_stock(request: StockRequest):
         # Create chart data
         chart_data = create_chart_data(analyzer)
         
+        # Calculate support and resistance levels
+        support_resistance = []
+        
+        # Add Bollinger Bands as support/resistance
+        if 'BB_upper' in analyzer.df.columns and 'BB_lower' in analyzer.df.columns:
+            bb_upper = analyzer.df['BB_upper'].iloc[-1]
+            bb_lower = analyzer.df['BB_lower'].iloc[-1]
+            bb_width = bb_upper - bb_lower
+            
+            if not pd.isna(bb_upper):
+                support_resistance.append(
+                    SupportResistanceLevel(
+                        price=clean_float(bb_upper),
+                        type=SupportResistanceType.RESISTANCE,
+                        strength=70.0  # Higher strength for Bollinger Band levels
+                    )
+                )
+            
+            if not pd.isna(bb_lower):
+                support_resistance.append(
+                    SupportResistanceLevel(
+                        price=clean_float(bb_lower),
+                        type=SupportResistanceType.SUPPORT,
+                        strength=70.0
+                    )
+                )
+        
+        # Add moving averages as support/resistance
+        if 'SMA_20' in analyzer.df.columns:
+            sma20 = analyzer.df['SMA_20'].iloc[-1]
+            current_price = analyzer.df['Close'].iloc[-1]
+            
+            if not pd.isna(sma20):
+                support_resistance.append(
+                    SupportResistanceLevel(
+                        price=clean_float(sma20),
+                        type=SupportResistanceType.SUPPORT if current_price > sma20 else SupportResistanceType.RESISTANCE,
+                        strength=60.0
+                    )
+                )
+        
+        # Sort levels by price
+        support_resistance.sort(key=lambda x: x.price)
+
         # Prepare response
         response = StockAnalysisResponse(
             ticker=ticker,
@@ -238,6 +302,14 @@ async def analyze_stock(request: StockRequest):
                 combined_score=clean_float(recommendation['combined_score']),
                 description=recommendation_description
             ),
+            priceTargets=PriceTargets(
+                current_price=clean_float(analyzer.df['Close'].iloc[-1]),
+                stop_loss=clean_float(bb_lower) if 'BB_lower' in analyzer.df.columns and not pd.isna(bb_lower) else 0,
+                target_1=clean_float(bb_upper) if 'BB_upper' in analyzer.df.columns and not pd.isna(bb_upper) else 0,
+                target_2=clean_float(bb_upper * 1.05) if 'BB_upper' in analyzer.df.columns and not pd.isna(bb_upper) else 0,
+                risk_reward=clean_float(3.0)  # Default risk/reward ratio
+            ),
+            supportResistanceLevels=support_resistance,
             chartData=chart_data,
             latestData=LatestData(
                 close=clean_float(analyzer.df['Close'].iloc[-1]),

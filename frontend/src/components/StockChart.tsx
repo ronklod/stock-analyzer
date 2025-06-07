@@ -13,7 +13,7 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
-import { ChartData } from '../types';
+import { ChartData, SupportResistanceLevel } from '../types';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-date-fns';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
@@ -39,12 +39,32 @@ ChartJS.register(
 interface Props {
   chartData: ChartData;
   ticker: string;
+  supportResistanceLevels: SupportResistanceLevel[];
 }
 
 type ChartType = 'line' | 'candlestick';
 type TimeInterval = '1d' | 'week' | 'month' | 'year' | 'all';
 
-const StockChart: React.FC<Props> = ({ chartData, ticker }) => {
+// Common zoom configuration
+const zoomOptions = {
+  zoom: {
+    wheel: {
+      enabled: true,
+      speed: 0.1,
+    },
+    pinch: {
+      enabled: true,
+    },
+    mode: 'x' as const,
+  },
+  pan: {
+    enabled: true,
+    mode: 'x' as const,
+    modifierKey: 'ctrl' as const,
+  },
+};
+
+const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevels }) => {
   const [chartType, setChartType] = useState<ChartType>('line');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('all');
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
@@ -520,22 +540,103 @@ const StockChart: React.FC<Props> = ({ chartData, ticker }) => {
     ] : [],
   };
 
-  // Common zoom configuration
-  const zoomOptions = {
-    zoom: {
-      wheel: {
-        enabled: true,
-        speed: 0.1,
+  // Support & Resistance chart data
+  const supportResistanceData = {
+    labels: filteredData.dates,
+    datasets: [
+      {
+        label: 'Close Price',
+        data: filteredData.dates.map((date, index) => ({
+          x: new Date(date).getTime(),
+          y: filteredData.ohlc.close[index],
+        })),
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        borderWidth: 2,
+        pointRadius: 0,
+        type: 'line' as const,
+        fill: false,
       },
-      pinch: {
-        enabled: true,
-      },
-      mode: 'x' as const,
+      ...supportResistanceLevels.map((level) => ({
+        label: `${level.type} ($${level.price.toFixed(2)})`,
+        data: filteredData.dates.map((date) => ({
+          x: new Date(date).getTime(),
+          y: level.price,
+        })),
+        borderColor: level.type === 'Support' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        type: 'line' as const,
+        fill: false,
+      })),
+    ],
+  };
+
+  // Support & Resistance chart options
+  const supportResistanceOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
     },
-    pan: {
-      enabled: true,
-      mode: 'x' as const,
-      modifierKey: 'ctrl' as const,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Support & Resistance Levels',
+        font: {
+          size: 16,
+        },
+      },
+      legend: {
+        position: 'top' as const,
+        display: true,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            if (value !== null) {
+              if (label.includes('Support') || label.includes('Resistance')) {
+                return `${label} (Strength: ${supportResistanceLevels[context.datasetIndex - 1]?.strength.toFixed(1)}%)`;
+              }
+              return `${label}: $${value.toFixed(2)}`;
+            }
+            return '';
+          },
+        },
+      },
+      zoom: zoomOptions as any,
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+          displayFormats: {
+            day: 'MMM dd',
+          },
+        },
+        title: {
+          display: true,
+          text: 'Date',
+        },
+      },
+      y: {
+        display: true,
+        position: 'left' as const,
+        title: {
+          display: true,
+          text: 'Price ($)',
+        },
+        ticks: {
+          callback: function(value: any) {
+            return '$' + value.toFixed(0);
+          },
+        },
+      },
     },
   };
 
@@ -864,15 +965,15 @@ const StockChart: React.FC<Props> = ({ chartData, ticker }) => {
   return (
     <div className="charts-container">
       <div className="chart-controls">
-        <div className="chart-type-toggle">
+        <div className="chart-type-selector">
           <button 
-            className={`toggle-btn ${chartType === 'line' ? 'active' : ''}`}
+            className={`chart-type-button ${chartType === 'line' ? 'active' : ''}`}
             onClick={() => setChartType('line')}
           >
-            Line Chart
+            Line
           </button>
           <button 
-            className={`toggle-btn ${chartType === 'candlestick' ? 'active' : ''}`}
+            className={`chart-type-button ${chartType === 'candlestick' ? 'active' : ''}`}
             onClick={() => setChartType('candlestick')}
           >
             Candlestick
@@ -880,34 +981,34 @@ const StockChart: React.FC<Props> = ({ chartData, ticker }) => {
         </div>
         <div className="time-interval-selector">
           <button 
-            className={`interval-btn ${timeInterval === '1d' ? 'active' : ''}`}
+            className={`time-interval-button ${timeInterval === '1d' ? 'active' : ''}`}
             onClick={() => setTimeInterval('1d')}
           >
             1D
           </button>
           <button 
-            className={`interval-btn ${timeInterval === 'week' ? 'active' : ''}`}
+            className={`time-interval-button ${timeInterval === 'week' ? 'active' : ''}`}
             onClick={() => setTimeInterval('week')}
           >
             1W
           </button>
           <button 
-            className={`interval-btn ${timeInterval === 'month' ? 'active' : ''}`}
+            className={`time-interval-button ${timeInterval === 'month' ? 'active' : ''}`}
             onClick={() => setTimeInterval('month')}
           >
             1M
           </button>
           <button 
-            className={`interval-btn ${timeInterval === 'year' ? 'active' : ''}`}
+            className={`time-interval-button ${timeInterval === 'year' ? 'active' : ''}`}
             onClick={() => setTimeInterval('year')}
           >
             1Y
           </button>
           <button 
-            className={`interval-btn ${timeInterval === 'all' ? 'active' : ''}`}
+            className={`time-interval-button ${timeInterval === 'all' ? 'active' : ''}`}
             onClick={() => setTimeInterval('all')}
           >
-            All
+            ALL
           </button>
         </div>
       </div>
@@ -957,6 +1058,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker }) => {
           <ChartHeader title="Bollinger Bands" indicator="Bollinger" />
           <div className="chart-container" style={{ height: '300px' }}>
             <Chart type='line' data={bollingerData} options={bollingerOptions} />
+          </div>
+        </div>
+      )}
+      {supportResistanceLevels.length > 0 && (
+        <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
+          <ChartHeader title="Support & Resistance Levels" indicator="Support & Resistance" />
+          <div className="chart-container" style={{ height: '300px' }}>
+            <Chart type='line' data={supportResistanceData} options={supportResistanceOptions} />
           </div>
         </div>
       )}
