@@ -189,61 +189,151 @@ class StockAnalyzer:
         return {"score": self.technical_score, "signals": signals}
     
     def fetch_news_sentiment(self):
-        """Fetch and analyze news sentiment"""
+        """Fetch and analyze news sentiment from major financial news sources"""
         sentiments = []
+        news_sources = []
+        news_articles = []  # Store news articles
         
-        # Try multiple news sources
-        # 1. Using NewsAPI (if API key is available)
+        # 1. Using Alpha Vantage News API (if API key is available)
+        alpha_vantage_key = os.getenv('ALPHA_VANTAGE_KEY')
+        if alpha_vantage_key:
+            try:
+                url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={self.ticker}&apikey={alpha_vantage_key}"
+                response = requests.get(url)
+                if response.status_code == 200:
+                    data = response.json()
+                    feed = data.get('feed', [])
+                    for article in feed[:10]:
+                        sentiment_score = float(article.get('overall_sentiment_score', 0))
+                        sentiments.append(sentiment_score * 2 - 1)  # Convert 0-1 scale to -1 to 1
+                        source = article.get('source', '')
+                        if source:
+                            news_sources.append(source)
+                        # Store article info
+                        news_articles.append({
+                            'title': article.get('title', ''),
+                            'url': article.get('url', ''),
+                            'source': source,
+                            'sentiment': sentiment_score * 2 - 1,
+                            'date': article.get('time_published', ''),
+                            'summary': article.get('summary', '')
+                        })
+            except Exception as e:
+                print(f"Alpha Vantage API error: {str(e)}")
+
+        # 2. Using NewsAPI (targeting financial sources)
         newsapi_key = os.getenv('NEWSAPI_KEY')
         if newsapi_key:
             try:
-                url = f"https://newsapi.org/v2/everything?q={self.ticker}&apiKey={newsapi_key}&pageSize=20&sortBy=publishedAt"
+                financial_sources = 'bloomberg.com,cnbc.com,reuters.com,ft.com,wsj.com,marketwatch.com,fool.com,seekingalpha.com,investing.com'
+                url = f"https://newsapi.org/v2/everything?q={self.ticker}&apiKey={newsapi_key}&domains={financial_sources}&pageSize=20&sortBy=publishedAt&language=en"
                 response = requests.get(url)
                 if response.status_code == 200:
                     articles = response.json().get('articles', [])
                     for article in articles[:10]:
                         title = article.get('title', '')
                         description = article.get('description', '')
+                        source = article.get('source', {}).get('name', '')
+                        
+                        if source:
+                            news_sources.append(source)
+                        
                         text = f"{title} {description}"
                         if text:
                             blob = TextBlob(text)
-                            sentiments.append(blob.sentiment.polarity)
-            except:
-                pass
-        
-        # 2. Using Finnhub (if API key is available)
+                            sentiment = blob.sentiment.polarity
+                            weight = 1.2 if any(fs in source.lower() for fs in ['bloomberg', 'cnbc', 'reuters', 'wsj']) else 1.0
+                            sentiments.append(sentiment * weight)
+                            # Store article info
+                            news_articles.append({
+                                'title': title,
+                                'url': article.get('url', ''),
+                                'source': source,
+                                'sentiment': sentiment,
+                                'date': article.get('publishedAt', ''),
+                                'summary': description
+                            })
+            except Exception as e:
+                print(f"NewsAPI error: {str(e)}")
+
+        # 3. Using Finnhub (if API key is available)
         finnhub_key = os.getenv('FINNHUB_API_KEY')
         if finnhub_key:
             try:
                 import finnhub
                 finnhub_client = finnhub.Client(api_key=finnhub_key)
-                news = finnhub_client.company_news(self.ticker, _from=datetime.now().date() - timedelta(days=7), to=datetime.now().date())
+                news = finnhub_client.company_news(
+                    self.ticker, 
+                    _from=datetime.now().date() - timedelta(days=7),
+                    to=datetime.now().date()
+                )
                 for article in news[:10]:
                     headline = article.get('headline', '')
                     summary = article.get('summary', '')
+                    source = article.get('source', '')
+                    
+                    if source:
+                        news_sources.append(source)
+                    
                     text = f"{headline} {summary}"
                     if text:
                         blob = TextBlob(text)
-                        sentiments.append(blob.sentiment.polarity)
-            except:
-                pass
-        
-        # 3. Basic Yahoo Finance news (no API key required)
+                        sentiment = blob.sentiment.polarity
+                        days_old = (datetime.now() - datetime.fromtimestamp(article.get('datetime', 0))).days
+                        recency_weight = 1.2 if days_old <= 2 else 1.0
+                        sentiments.append(sentiment * recency_weight)
+                        # Store article info
+                        news_articles.append({
+                            'title': headline,
+                            'url': article.get('url', ''),
+                            'source': source,
+                            'sentiment': sentiment,
+                            'date': datetime.fromtimestamp(article.get('datetime', 0)).isoformat(),
+                            'summary': summary
+                        })
+            except Exception as e:
+                print(f"Finnhub API error: {str(e)}")
+
+        # 4. Using Yahoo Finance news (no API key required)
         try:
             news = self.stock.news
             for article in news[:10]:
                 title = article.get('title', '')
+                source = article.get('publisher', '')
+                
+                if source:
+                    news_sources.append(source)
+                
                 if title:
                     blob = TextBlob(title)
-                    sentiments.append(blob.sentiment.polarity)
-        except:
-            pass
-        
-        # Calculate average sentiment
+                    sentiment = blob.sentiment.polarity
+                    sentiments.append(sentiment)
+                    # Store article info
+                    news_articles.append({
+                        'title': title,
+                        'url': article.get('link', ''),
+                        'source': source,
+                        'sentiment': sentiment,
+                        'date': datetime.fromtimestamp(article.get('providerPublishTime', 0)).isoformat(),
+                        'summary': article.get('summary', '')
+                    })
+        except Exception as e:
+            print(f"Yahoo Finance news error: {str(e)}")
+
+        # Calculate weighted sentiment score
         if sentiments:
-            self.news_sentiment = np.mean(sentiments) * 100  # Convert to -100 to 100 scale
+            unique_sources = len(set(news_sources))
+            source_diversity_bonus = min(unique_sources / 5, 1) * 0.1
+            base_sentiment = np.mean(sentiments)
+            self.news_sentiment = (base_sentiment * (1 + source_diversity_bonus)) * 100
         else:
             self.news_sentiment = 0
+            
+        # Sort articles by absolute sentiment value (most impactful first)
+        news_articles.sort(key=lambda x: abs(x['sentiment']), reverse=True)
+        
+        # Store the articles for access in other methods
+        self.news_articles = news_articles[:10]  # Keep top 10 most impactful articles
             
         return self.news_sentiment
     

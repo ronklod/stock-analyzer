@@ -71,9 +71,18 @@ class TechnicalAnalysis(BaseModel):
     score: float
     signals: Dict[str, str]
 
+class NewsArticle(BaseModel):
+    title: str
+    url: str
+    source: str
+    sentiment: float
+    date: str
+    summary: str
+
 class SentimentAnalysis(BaseModel):
     score: float
     description: str
+    articles: List[NewsArticle]
 
 class Recommendation(BaseModel):
     recommendation: str
@@ -216,7 +225,8 @@ async def analyze_stock(request: StockRequest):
             ),
             sentimentAnalysis=SentimentAnalysis(
                 score=clean_float(analyzer.news_sentiment),
-                description='Positive' if analyzer.news_sentiment > 0 else 'Negative' if analyzer.news_sentiment < 0 else 'Neutral'
+                description='Positive' if analyzer.news_sentiment > 0 else 'Negative' if analyzer.news_sentiment < 0 else 'Neutral',
+                articles=analyzer.news_articles
             ),
             recommendation=Recommendation(
                 recommendation=recommendation['recommendation'],

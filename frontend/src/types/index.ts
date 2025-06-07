@@ -20,9 +20,19 @@ export interface TechnicalAnalysis {
   signals: Record<string, string>;
 }
 
+export interface NewsArticle {
+  title: string;
+  url: string;
+  source: string;
+  sentiment: number;
+  date: string;
+  summary: string;
+}
+
 export interface SentimentAnalysis {
   score: number;
   description: string;
+  articles: NewsArticle[];
 }
 
 export interface Recommendation {
