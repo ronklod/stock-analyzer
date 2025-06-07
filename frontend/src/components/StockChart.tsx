@@ -542,21 +542,25 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
 
   // Support & Resistance chart data
   const supportResistanceData = {
-    labels: filteredData.dates,
     datasets: [
       {
-        label: 'Close Price',
+        label: ticker,
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
-          y: filteredData.ohlc.close[index],
+          o: filteredData.ohlc.open[index],
+          h: filteredData.ohlc.high[index],
+          l: filteredData.ohlc.low[index],
+          c: filteredData.ohlc.close[index],
         })),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
-        borderWidth: 2,
-        pointRadius: 0,
-        type: 'line' as const,
-        fill: false,
-      },
+        type: 'candlestick' as const,
+        candlestick: {
+          color: {
+            up: '#26a69a',
+            down: '#ef5350',
+            unchanged: '#999',
+          },
+        },
+      } as any,
       ...supportResistanceLevels.map((level) => ({
         label: `${level.type} ($${level.price.toFixed(2)})`,
         data: filteredData.dates.map((date) => ({
@@ -574,7 +578,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   };
 
   // Support & Resistance chart options
-  const supportResistanceOptions: ChartOptions<'line'> = {
+  const supportResistanceOptions: ChartOptions<any> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -597,13 +601,21 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         callbacks: {
           label: function(context: any) {
             const label = context.dataset.label || '';
-            const value = context.parsed.y;
-            if (value !== null) {
-              if (label.includes('Support') || label.includes('Resistance')) {
-                return `${label} (Strength: ${supportResistanceLevels[context.datasetIndex - 1]?.strength.toFixed(1)}%)`;
-              }
-              return `${label}: $${value.toFixed(2)}`;
+            const raw = context.raw;
+            
+            if (raw && raw.o !== undefined) {
+              return [
+                `Open: $${raw.o.toFixed(2)}`,
+                `High: $${raw.h.toFixed(2)}`,
+                `Low: $${raw.l.toFixed(2)}`,
+                `Close: $${raw.c.toFixed(2)}`,
+              ];
             }
+            
+            if (label.includes('Support') || label.includes('Resistance')) {
+              return `${label} (Strength: ${supportResistanceLevels[context.datasetIndex - 1]?.strength.toFixed(1)}%)`;
+            }
+            
             return '';
           },
         },
@@ -1065,7 +1077,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           <ChartHeader title="Support & Resistance Levels" indicator="Support & Resistance" />
           <div className="chart-container" style={{ height: '300px' }}>
-            <Chart type='line' data={supportResistanceData} options={supportResistanceOptions} />
+            <Chart type='candlestick' data={supportResistanceData} options={supportResistanceOptions} />
           </div>
         </div>
       )}
