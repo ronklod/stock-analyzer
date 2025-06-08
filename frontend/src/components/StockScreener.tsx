@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
 
 interface Props {
@@ -9,6 +9,12 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ScreeningResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Clear results when type changes
+  useEffect(() => {
+    setResults(null);
+    setError(null);
+  }, [type]);
 
   const handleFindStocks = async () => {
     setLoading(true);
