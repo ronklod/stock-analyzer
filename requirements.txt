@@ -17,4 +17,6 @@ finnhub-python==2.4.19
 # FastAPI dependencies
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0 
+pydantic==2.5.0
+# Database dependencies
+sqlalchemy==2.0.23 

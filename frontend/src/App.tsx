@@ -6,9 +6,11 @@ import RecommendationCard from './components/RecommendationCard';
 import TechnicalAnalysisCard from './components/TechnicalAnalysisCard';
 import StockChart from './components/StockChart';
 import StockScreener from './components/StockScreener';
+import WatchlistPage from './components/WatchlistPage';
 import './StockScreener.css';
 import { StockAnalysisResponse } from './types';
 import PriceTargetsCard from './components/PriceTargetsCard';
+import WatchlistButton from './components/WatchlistButton';
 
 function StockAnalyzer() {
   const [searchParams] = useSearchParams();
@@ -63,17 +65,7 @@ function StockAnalyzer() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>📈 Stock Analyzer</h1>
-        <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
-        <nav style={{ marginTop: '1rem' }}>
-          <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
-          <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-          <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
-          <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
-        </nav>
-      </header>
-
+      <AppHeader />
       <main className="App-main">
         <section className="search-section">
           <div className="search-container">
@@ -106,6 +98,13 @@ function StockAnalyzer() {
 
         {analysisData && (
           <section className="results-section">
+            <div className="results-header">
+              <h2>{analysisData.ticker} Analysis Results</h2>
+              <WatchlistButton 
+                symbol={analysisData.ticker} 
+                companyName={analysisData.companyInfo.name} 
+              />
+            </div>
             <div className="results-grid">
               <CompanyInfoCard companyInfo={analysisData.companyInfo} ticker={analysisData.ticker} />
               <RecommendationCard recommendation={analysisData.recommendation} />
@@ -135,11 +134,32 @@ function StockAnalyzer() {
           </section>
         )}
       </main>
-
-      <footer className="App-footer">
-        <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-      </footer>
+      <AppFooter />
     </div>
+  );
+}
+
+function AppHeader() {
+  return (
+    <header className="App-header">
+      <h1>📈 Stock Analyzer</h1>
+      <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
+      <nav style={{ marginTop: '1rem' }}>
+        <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
+        <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
+        <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
+        <Link to="/screener/mag7" style={{ color: 'white', marginRight: '2rem' }}>MAG7 Screener</Link>
+        <Link to="/watchlist" style={{ color: 'white' }}>My Watchlist</Link>
+      </nav>
+    </header>
+  );
+}
+
+function AppFooter() {
+  return (
+    <footer className="App-footer">
+      <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
+    </footer>
   );
 }
 
@@ -150,62 +170,38 @@ function App() {
         <Route path="/" element={<StockAnalyzer />} />
         <Route path="/screener/nasdaq100" element={
           <div className="App">
-            <header className="App-header">
-              <h1>📈 Stock Analyzer</h1>
-              <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
-              <nav style={{ marginTop: '1rem' }}>
-                <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
-                <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
-                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
-              </nav>
-            </header>
+            <AppHeader />
             <main className="App-main">
               <StockScreener type="nasdaq100" />
             </main>
-            <footer className="App-footer">
-              <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-            </footer>
+            <AppFooter />
           </div>
         } />
         <Route path="/screener/sp500" element={
           <div className="App">
-            <header className="App-header">
-              <h1>📈 Stock Analyzer</h1>
-              <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
-              <nav style={{ marginTop: '1rem' }}>
-                <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
-                <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
-                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
-              </nav>
-            </header>
+            <AppHeader />
             <main className="App-main">
               <StockScreener type="sp500" />
             </main>
-            <footer className="App-footer">
-              <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-            </footer>
+            <AppFooter />
           </div>
         } />
         <Route path="/screener/mag7" element={
           <div className="App">
-            <header className="App-header">
-              <h1>📈 Stock Analyzer</h1>
-              <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
-              <nav style={{ marginTop: '1rem' }}>
-                <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
-                <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-                <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
-                <Link to="/screener/mag7" style={{ color: 'white' }}>MAG7 Screener</Link>
-              </nav>
-            </header>
+            <AppHeader />
             <main className="App-main">
               <StockScreener type="mag7" />
             </main>
-            <footer className="App-footer">
-              <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-            </footer>
+            <AppFooter />
+          </div>
+        } />
+        <Route path="/watchlist" element={
+          <div className="App">
+            <AppHeader />
+            <main className="App-main">
+              <WatchlistPage />
+            </main>
+            <AppFooter />
           </div>
         } />
       </Routes>

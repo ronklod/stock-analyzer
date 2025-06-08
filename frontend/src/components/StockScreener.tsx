@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
+import WatchlistButton from './WatchlistButton';
 
 interface Props {
   type: 'nasdaq100' | 'sp500' | 'mag7';
@@ -171,12 +172,15 @@ const StockScreener: React.FC<Props> = ({ type }) => {
                   <p>{stock.description}</p>
                 </div>
 
-                <button 
-                  className="analyze-button-card"
-                  onClick={() => window.location.href = `/?ticker=${stock.symbol}`}
-                >
-                  Detailed Analysis →
-                </button>
+                <div className="stock-actions">
+                  <WatchlistButton symbol={stock.symbol} companyName={stock.name} />
+                  <button 
+                    className="analyze-button-card"
+                    onClick={() => window.location.href = `/?ticker=${stock.symbol}`}
+                  >
+                    Detailed Analysis →
+                  </button>
+                </div>
               </div>
             ))}
           </div>

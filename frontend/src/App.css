@@ -512,4 +512,17 @@ body {
   background-color: #d1d5db !important;
   transform: scale(1.1);
   transition: all 0.2s ease;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.results-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #1a1a1a;
 } 

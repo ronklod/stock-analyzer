@@ -3,7 +3,7 @@
 FastAPI server for Stock Analyzer
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
@@ -12,6 +12,9 @@ from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
 from sp500_analyzer import SP500Screener
 from mag7_analyzer import MAG7Screener
+from database import get_db, WatchlistItem
+from sqlalchemy.orm import Session
+from datetime import datetime
 import logging
 import numpy as np
 import math
@@ -158,6 +161,19 @@ class ScreeningResponse(BaseModel):
     topStocks: List[TopStock]
     totalAnalyzed: int
     failedSymbols: List[str]
+
+# New Watchlist Models
+class WatchlistItemCreate(BaseModel):
+    symbol: str
+    company_name: str
+    notes: Optional[str] = None
+
+class WatchlistItemResponse(BaseModel):
+    id: int
+    symbol: str
+    company_name: str
+    added_date: datetime
+    notes: Optional[str]
 
 @app.post("/api/analyze", response_model=StockAnalysisResponse)
 async def analyze_stock(request: StockRequest):
@@ -539,6 +555,54 @@ async def root():
         "docs": "/docs",
         "health": "/api/health"
     }
+
+# New Watchlist Endpoints
+@app.post("/api/watchlist", response_model=WatchlistItemResponse)
+async def add_to_watchlist(item: WatchlistItemCreate, db: Session = Depends(get_db)):
+    """
+    Add a stock to the watchlist
+    """
+    try:
+        db_item = WatchlistItem(
+            symbol=item.symbol.upper(),
+            company_name=item.company_name,
+            notes=item.notes
+        )
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
+        return db_item
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/watchlist", response_model=List[WatchlistItemResponse])
+async def get_watchlist(db: Session = Depends(get_db)):
+    """
+    Get all stocks in the watchlist
+    """
+    return db.query(WatchlistItem).all()
+
+@app.delete("/api/watchlist/{item_id}")
+async def remove_from_watchlist(item_id: int, db: Session = Depends(get_db)):
+    """
+    Remove a stock from the watchlist
+    """
+    item = db.query(WatchlistItem).filter(WatchlistItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    db.delete(item)
+    db.commit()
+    return {"message": "Item deleted successfully"}
+
+@app.get("/api/watchlist/check/{symbol}")
+async def check_watchlist(symbol: str, db: Session = Depends(get_db)):
+    """
+    Check if a stock is in the watchlist
+    """
+    item = db.query(WatchlistItem).filter(WatchlistItem.symbol == symbol.upper()).first()
+    return {"in_watchlist": bool(item), "item_id": item.id if item else None}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001) 
