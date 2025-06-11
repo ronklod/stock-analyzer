@@ -50,8 +50,8 @@ const zoomOptions = {
   zoom: {
     wheel: {
       enabled: true,
-      speed: 0.05,  // Reduced speed for smoother zooming
-      modifierKey: null, // Allow zooming without modifier key
+      speed: 0.05,
+      modifierKey: null,
     },
     pinch: {
       enabled: true,
@@ -66,15 +66,21 @@ const zoomOptions = {
   pan: {
     enabled: true,
     mode: 'x' as const,
-    modifierKey: null, // Allow panning without modifier key
+    modifierKey: null,
     speed: 10,
     threshold: 10,
+    overScaleMode: 'x' as const,
   },
   limits: {
     x: {min: 'original', max: 'original'},
     y: {min: 'original', max: 'original'},
   },
 };
+
+// Add CSS at the top of the file
+const chartContainerStyle = {
+  cursor: 'grab',
+} as const;
 
 const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevels }) => {
   const [chartType, setChartType] = useState<ChartType>('candlestick');
@@ -1011,6 +1017,13 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
 
   return (
     <div className="charts-container">
+      <style>
+        {`
+          .chart-container:active {
+            cursor: grabbing !important;
+          }
+        `}
+      </style>
       <div className="chart-controls" style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -1164,27 +1177,71 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </div>
       </div>
       <div className="zoom-instructions">
-        <small>💡 Scroll or drag to zoom • Drag to pan • Double-click to reset</small>
+        <small>💡 Scroll or drag to zoom • Drag to pan • Double-click to reset • Click and hold to move chart</small>
       </div>
       <div className="chart-wrapper">
-        <div className="chart-container" style={{ height: '400px' }}>
+        <div className="chart-container" 
+          style={{ 
+            height: '400px',
+            ...chartContainerStyle
+          }}>
           <Chart 
             type={chartType === 'line' ? 'line' : 'candlestick' as any} 
             data={priceData} 
-            options={priceOptions} 
+            options={{
+              ...priceOptions,
+              onHover: (event: any, elements: any) => {
+                const target = event.native?.target as HTMLElement;
+                if (target) {
+                  target.style.cursor = elements?.length ? 'pointer' : 'grab';
+                }
+              },
+            }} 
           />
         </div>
       </div>
       <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-        <div className="chart-container" style={{ height: '200px' }}>
-          <Chart type='bar' data={volumeData} options={volumeOptions} />
+        <div className="chart-container" 
+          style={{ 
+            height: '200px',
+            ...chartContainerStyle
+          }}>
+          <Chart 
+            type='bar' 
+            data={volumeData} 
+            options={{
+              ...volumeOptions,
+              onHover: (event: any, elements: any) => {
+                const target = event.native?.target as HTMLElement;
+                if (target) {
+                  target.style.cursor = elements?.length ? 'pointer' : 'grab';
+                }
+              },
+            }} 
+          />
         </div>
       </div>
       {filteredData.indicators.rsi && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           <ChartHeader title="RSI (Relative Strength Index)" indicator="RSI" />
-          <div className="chart-container" style={{ height: '200px' }}>
-            <Chart type='line' data={rsiData} options={rsiOptions} />
+          <div className="chart-container" 
+            style={{ 
+              height: '200px',
+              ...chartContainerStyle
+            }}>
+            <Chart 
+              type='line' 
+              data={rsiData} 
+              options={{
+                ...rsiOptions,
+                onHover: (event: any, elements: any) => {
+                  const target = event.native?.target as HTMLElement;
+                  if (target) {
+                    target.style.cursor = elements?.length ? 'pointer' : 'grab';
+                  }
+                },
+              }} 
+            />
           </div>
         </div>
       )}
