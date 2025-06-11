@@ -50,22 +50,34 @@ const zoomOptions = {
   zoom: {
     wheel: {
       enabled: true,
-      speed: 0.1,
+      speed: 0.05,  // Reduced speed for smoother zooming
+      modifierKey: null, // Allow zooming without modifier key
     },
     pinch: {
       enabled: true,
     },
     mode: 'x' as const,
+    drag: {
+      enabled: true,
+      backgroundColor: 'rgba(0,0,0,0.1)',
+      borderColor: 'rgba(0,0,0,0.3)',
+    },
   },
   pan: {
     enabled: true,
     mode: 'x' as const,
-    modifierKey: 'ctrl' as const,
+    modifierKey: null, // Allow panning without modifier key
+    speed: 10,
+    threshold: 10,
+  },
+  limits: {
+    x: {min: 'original', max: 'original'},
+    y: {min: 'original', max: 'original'},
   },
 };
 
 const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevels }) => {
-  const [chartType, setChartType] = useState<ChartType>('line');
+  const [chartType, setChartType] = useState<ChartType>('candlestick');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('all');
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
 
@@ -706,6 +718,20 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: true,
           text: 'Date',
         },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 10,
+        },
+        grid: {
+          display: true,
+          drawBorder: true,
+        },
+        offset: true,
+        padding: {
+          left: 10,
+          right: 30  // Add more padding to the right
+        }
       },
       y: {
         display: true,
@@ -714,8 +740,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: true,
           text: 'Price ($)',
         },
+        grid: {
+          display: true,
+          drawBorder: true,
+        },
       },
     },
+    layout: {
+      padding: {
+        right: 30  // Add padding to the layout as well
+      }
+    }
   };
 
   // Volume chart options
@@ -1129,7 +1164,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </div>
       </div>
       <div className="zoom-instructions">
-        <small>💡 Scroll to zoom • Ctrl+Drag to pan • Double-click to reset</small>
+        <small>💡 Scroll or drag to zoom • Drag to pan • Double-click to reset</small>
       </div>
       <div className="chart-wrapper">
         <div className="chart-container" style={{ height: '400px' }}>
