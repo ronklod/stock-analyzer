@@ -12,8 +12,10 @@ import {
     IconButton,
     Box,
     CircularProgress,
+    Tooltip,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CommentIcon from '@mui/icons-material/Comment';
 import { Link } from 'react-router-dom';
 
 interface WatchlistItem {
@@ -99,7 +101,17 @@ const WatchlistPage: React.FC = () => {
                                     <TableCell>
                                         {new Date(item.added_date).toLocaleDateString()}
                                     </TableCell>
-                                    <TableCell>{item.notes || '-'}</TableCell>
+                                    <TableCell>
+                                        {item.notes ? (
+                                            <Tooltip title={item.notes} placement="top">
+                                                <IconButton size="small" sx={{ color: 'primary.main' }}>
+                                                    <CommentIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        ) : (
+                                            '-'
+                                        )}
+                                    </TableCell>
                                     <TableCell align="right">
                                         <IconButton
                                             onClick={() => handleDelete(item.id)}

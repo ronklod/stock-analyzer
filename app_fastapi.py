@@ -602,7 +602,11 @@ async def check_watchlist(symbol: str, db: Session = Depends(get_db)):
     Check if a stock is in the watchlist
     """
     item = db.query(WatchlistItem).filter(WatchlistItem.symbol == symbol.upper()).first()
-    return {"in_watchlist": bool(item), "item_id": item.id if item else None}
+    return {
+        "in_watchlist": bool(item), 
+        "item_id": item.id if item else None,
+        "notes": item.notes if item else None
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001) 
