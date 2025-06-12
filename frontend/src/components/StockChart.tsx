@@ -56,20 +56,29 @@ const zoomOptions = {
     pinch: {
       enabled: true,
     },
-    mode: 'x' as const,
+    mode: 'xy' as const,
     drag: {
-      enabled: true,
-      backgroundColor: 'rgba(0,0,0,0.1)',
-      borderColor: 'rgba(0,0,0,0.3)',
+      enabled: false, // Disable drag-to-zoom to avoid conflict with panning
     },
   },
   pan: {
     enabled: true,
-    mode: 'x' as const,
+    mode: 'xy' as const,
     modifierKey: null,
-    speed: 10,
-    threshold: 10,
-    overScaleMode: 'x' as const,
+    speed: 1.5,
+    threshold: 1,
+    onPanStart: function(event: any) {
+      const target = event.chart.canvas;
+      if (target) {
+        target.style.cursor = 'grabbing';
+      }
+    },
+    onPanComplete: function(event: any) {
+      const target = event.chart.canvas;
+      if (target) {
+        target.style.cursor = 'grab';
+      }
+    },
   },
   limits: {
     x: {min: 'original', max: 'original'},
@@ -731,12 +740,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         },
         grid: {
           display: true,
-          drawBorder: true,
         },
         offset: true,
         padding: {
           left: 10,
-          right: 30  // Add more padding to the right
+          right: 30
         }
       },
       y: {
@@ -748,15 +756,16 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         },
         grid: {
           display: true,
-          drawBorder: true,
         },
+        beginAtZero: false,
+        grace: '5%',
       },
     },
     layout: {
       padding: {
-        right: 30  // Add padding to the layout as well
+        right: 30
       }
-    }
+    },
   };
 
   // Volume chart options
@@ -802,6 +811,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           maxTicksLimit: 10,
           autoSkip: true,
         },
+        grid: {
+          display: true,
+        },
       },
       y: {
         display: true,
@@ -810,11 +822,16 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: true,
           text: 'Volume',
         },
+        grid: {
+          display: true,
+        },
         ticks: {
           callback: function(value: any) {
             return (Number(value) / 1e6).toFixed(0) + 'M';
           },
         },
+        beginAtZero: true,
+        grace: '5%',
       },
     },
   };
@@ -853,6 +870,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           maxTicksLimit: 10,
           autoSkip: true,
         },
+        grid: {
+          display: true,
+        },
       },
       y: {
         display: true,
@@ -868,6 +888,10 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return value;
           },
         },
+        grid: {
+          display: true,
+        },
+        grace: '5%',
       },
     },
   };
@@ -896,6 +920,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           maxTicksLimit: 10,
           autoSkip: true,
         },
+        grid: {
+          display: true,
+        },
       },
       y: {
         display: true,
@@ -904,6 +931,10 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: true,
           text: 'MACD',
         },
+        grid: {
+          display: true,
+        },
+        grace: '5%',
       },
     },
   };
@@ -942,6 +973,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           maxTicksLimit: 10,
           autoSkip: true,
         },
+        grid: {
+          display: true,
+        },
       },
       y: {
         display: true,
@@ -957,6 +991,10 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return value;
           },
         },
+        grid: {
+          display: true,
+        },
+        grace: '5%',
       },
     },
   };
@@ -1177,13 +1215,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </div>
       </div>
       <div className="zoom-instructions">
-        <small>💡 Scroll or drag to zoom • Drag to pan • Double-click to reset • Click and hold to move chart</small>
+        <small>
+          💡 Scroll to zoom X & Y axes • Click and drag to move chart • 
+          Double-click to reset
+        </small>
       </div>
       <div className="chart-wrapper">
         <div className="chart-container" 
           style={{ 
             height: '400px',
-            ...chartContainerStyle
+            ...chartContainerStyle,
+            cursor: 'grab',
           }}>
           <Chart 
             type={chartType === 'line' ? 'line' : 'candlestick' as any} 
@@ -1204,7 +1246,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-container" 
           style={{ 
             height: '200px',
-            ...chartContainerStyle
+            ...chartContainerStyle,
+            cursor: 'grab',
           }}>
           <Chart 
             type='bar' 
@@ -1227,7 +1270,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           <div className="chart-container" 
             style={{ 
               height: '200px',
-              ...chartContainerStyle
+              ...chartContainerStyle,
+              cursor: 'grab',
             }}>
             <Chart 
               type='line' 
