@@ -61,6 +61,14 @@ class StockAnalyzer:
         self.df['EMA_12'] = EMAIndicator(close=self.df['Close'], window=12).ema_indicator()
         self.df['EMA_26'] = EMAIndicator(close=self.df['Close'], window=26).ema_indicator()
         
+        # Drop NaN values from moving averages
+        self.df['SMA_20'].fillna(method='bfill', inplace=True)
+        self.df['SMA_50'].fillna(method='bfill', inplace=True)
+        self.df['SMA_150'].fillna(method='bfill', inplace=True)
+        self.df['SMA_200'].fillna(method='bfill', inplace=True)
+        self.df['EMA_12'].fillna(method='bfill', inplace=True)
+        self.df['EMA_26'].fillna(method='bfill', inplace=True)
+        
         # RSI
         self.df['RSI'] = RSIIndicator(close=self.df['Close'], window=14).rsi()
         
