@@ -1,0 +1,192 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+interface User {
+  id: number;
+  email: string;
+  displayName: string | null;
+}
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName?: string) => Promise<void>;
+  logout: () => void;
+  initiateGoogleLogin: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Check for token and user info in localStorage on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
+    
+    // Check URL for token from OAuth (Google login)
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    const urlUserId = params.get('userId');
+    const urlEmail = params.get('email');
+    const urlDisplayName = params.get('displayName');
+    
+    // If token is in URL (from OAuth redirect), save it
+    if (urlToken && urlUserId && urlEmail) {
+      const newUser = {
+        id: parseInt(urlUserId),
+        email: urlEmail,
+        displayName: urlDisplayName || urlEmail.split('@')[0]
+      };
+      
+      localStorage.setItem('token', urlToken);
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setToken(urlToken);
+      setUser(newUser);
+      
+      // Clean the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Using URLSearchParams to properly format form data for FastAPI's OAuth2PasswordRequestForm
+      const formData = new URLSearchParams();
+      formData.append('username', email);  // FastAPI expects 'username'
+      formData.append('password', password);
+      
+      const response = await fetch('/api/auth/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Login failed');
+      }
+      
+      const data = await response.json();
+      
+      const userData = {
+        id: data.user_id,
+        email: data.email,
+        displayName: data.display_name || data.email.split('@')[0]
+      };
+      
+      // Save in state and localStorage
+      setToken(data.access_token);
+      setUser(userData);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (email: string, password: string, displayName?: string) => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          display_name: displayName
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+      
+      const data = await response.json();
+      
+      const userData = {
+        id: data.user_id,
+        email: data.email,
+        displayName: data.display_name || data.email.split('@')[0]
+      };
+      
+      // Save in state and localStorage
+      setToken(data.access_token);
+      setUser(userData);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = () => {
+    // Clear user data from state and localStorage
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
+  const initiateGoogleLogin = async () => {
+    try {
+      // Get Google login URL from backend
+      const response = await fetch('/api/auth/google/login');
+      const data = await response.json();
+      
+      // Redirect to Google's OAuth page
+      window.location.href = data.authorization_url;
+    } catch (error) {
+      console.error('Google login error:', error);
+    }
+  };
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    initiateGoogleLogin
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

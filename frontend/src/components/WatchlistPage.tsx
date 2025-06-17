@@ -13,10 +13,14 @@ import {
     Box,
     CircularProgress,
     Tooltip,
+    Alert,
+    Button,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommentIcon from '@mui/icons-material/Comment';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useApi } from '../utils/apiClient';
 
 interface WatchlistItem {
     id: number;
@@ -27,35 +31,45 @@ interface WatchlistItem {
 }
 
 const WatchlistPage: React.FC = () => {
+    const { isAuthenticated } = useAuth();
+    const api = useApi();
     const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchWatchlist = async () => {
         try {
-            const response = await fetch('/api/watchlist');
-            const data = await response.json();
+            setError(null);
+            const data = await api.getUserWatchlist();
             setWatchlist(data);
         } catch (error) {
             console.error('Error fetching watchlist:', error);
+            setError('Failed to load your watchlist. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchWatchlist();
-    }, []);
+        if (isAuthenticated) {
+            fetchWatchlist();
+        }
+    }, [isAuthenticated]);
 
     const handleDelete = async (id: number) => {
         try {
-            await fetch(`/api/watchlist/${id}`, {
-                method: 'DELETE',
-            });
+            await api.removeFromUserWatchlist(id);
             setWatchlist(watchlist.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting watchlist item:', error);
+            setError('Failed to delete item. Please try again.');
         }
     };
+    
+    // Redirect to login if not authenticated
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
+    }
 
     if (loading) {
         return (

@@ -10,6 +10,9 @@ import {
 } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useAuth } from '../context/AuthContext';
+import { useApi } from '../utils/apiClient';
+import { useNavigate } from 'react-router-dom';
 
 interface WatchlistButtonProps {
     symbol: string;
@@ -17,6 +20,9 @@ interface WatchlistButtonProps {
 }
 
 const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }) => {
+    const { isAuthenticated } = useAuth();
+    const api = useApi();
+    const navigate = useNavigate();
     const [isInWatchlist, setIsInWatchlist] = useState(false);
     const [itemId, setItemId] = useState<number | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
@@ -24,13 +30,15 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
     const [currentComment, setCurrentComment] = useState<string | null>(null);
 
     useEffect(() => {
-        checkWatchlistStatus();
-    }, [symbol]);
+        if (isAuthenticated) {
+            checkWatchlistStatus();
+        }
+    }, [symbol, isAuthenticated]);
 
     const checkWatchlistStatus = async () => {
+        if (!isAuthenticated) return;
         try {
-            const response = await fetch(`/api/watchlist/check/${symbol}`);
-            const data = await response.json();
+            const data = await api.checkUserWatchlist(symbol);
             setIsInWatchlist(data.in_watchlist);
             setItemId(data.item_id);
             setCurrentComment(data.notes || null);
@@ -40,6 +48,10 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
     };
 
     const handleAddToWatchlist = () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
         setOpenDialog(true);
     };
 
@@ -50,18 +62,11 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
 
     const handleSaveComment = async () => {
         try {
-            const response = await fetch('/api/watchlist', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    symbol,
-                    company_name: companyName,
-                    notes: comment.trim() || null
-                }),
-            });
-            const data = await response.json();
+            const data = await api.addToUserWatchlist(
+                symbol,
+                companyName,
+                comment.trim() || undefined
+            );
             setIsInWatchlist(true);
             setItemId(data.id);
             setCurrentComment(comment.trim() || null);
@@ -74,9 +79,7 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
     const handleRemoveFromWatchlist = async () => {
         try {
             if (itemId) {
-                await fetch(`/api/watchlist/${itemId}`, {
-                    method: 'DELETE',
-                });
+                await api.removeFromUserWatchlist(itemId);
                 setIsInWatchlist(false);
                 setItemId(null);
                 setCurrentComment(null);

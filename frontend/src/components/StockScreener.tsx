@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
 import WatchlistButton from './WatchlistButton';
+import { useApi } from '../utils/apiClient';
 
 interface Props {
   type: 'nasdaq100' | 'sp500' | 'mag7';
@@ -10,6 +11,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ScreeningResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const api = useApi();
 
   // Clear results when type changes
   useEffect(() => {
@@ -23,13 +25,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
     setResults(null);
 
     try {
-      const response = await fetch(`/api/screen/${type}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data: ScreeningResponse = await response.json();
+      const data = await api.getScreeningResults(type);
       setResults(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

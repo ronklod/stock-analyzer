@@ -86,7 +86,7 @@ body {
   font-size: 1.1rem;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -96,7 +96,14 @@ body {
 
 .analyze-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+}
+
+.analyze-button:disabled {
+  background: linear-gradient(135deg, #90caf9 0%, #64b5f6 100%);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .analyze-button:disabled {
@@ -127,7 +134,7 @@ body {
   height: 50px;
   margin: 0 auto 1rem;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #1976d2;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -146,6 +153,31 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Chart Type and Time Interval Buttons */
+.chart-type-button,
+.time-interval-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-type-button.active,
+.time-interval-button.active {
+  background-color: #1976d2;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-type-button:hover:not(.active),
+.time-interval-button:hover:not(.active) {
+  background-color: #e3f2fd;
+  color: #1976d2;
 }
 
 /* Results Section */
@@ -525,4 +557,4 @@ body {
   margin: 0;
   font-size: 1.8rem;
   color: #1a1a1a;
-} 
+}

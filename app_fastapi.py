@@ -3,26 +3,38 @@
 FastAPI server for Stock Analyzer
 """
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import uvicorn
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
 from sp500_analyzer import SP500Screener
 from mag7_analyzer import MAG7Screener
-from database import get_db, WatchlistItem
+from database import get_db, WatchlistItem, User, Base, engine
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import numpy as np
 import math
 from enum import Enum
 import pandas as pd
+import requests
+from authlib.integrations.requests_client import OAuth2Session
+from auth import (
+    authenticate_user, create_access_token, get_current_user, UserCreate, 
+    Token, UserResponse, create_user, get_user, create_or_update_google_user,
+    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -182,7 +194,7 @@ class WatchlistItemResponse(BaseModel):
     notes: Optional[str]
 
 @app.post("/api/analyze", response_model=StockAnalysisResponse)
-async def analyze_stock(request: StockRequest):
+async def analyze_stock(request: StockRequest, current_user: User = Depends(get_current_user)):
     """
     Analyze a stock and return comprehensive results
     """
@@ -408,12 +420,12 @@ def create_chart_data(analyzer) -> ChartData:
     return chart_data
 
 @app.get("/api/health")
-async def health_check():
+async def health_check(current_user: User = Depends(get_current_user)):
     """Health check endpoint"""
     return {"status": "healthy", "message": "Stock Analyzer API is running"}
 
 @app.get("/api/screen/nasdaq100", response_model=ScreeningResponse)
-async def screen_nasdaq100():
+async def screen_nasdaq100(current_user: User = Depends(get_current_user)):
     """
     Screen all NASDAQ-100 stocks and return the top 10 most attractive ones
     """
@@ -462,7 +474,7 @@ async def screen_nasdaq100():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/screen/sp500", response_model=ScreeningResponse)
-async def screen_sp500():
+async def screen_sp500(current_user: User = Depends(get_current_user)):
     """
     Screen all S&P 500 stocks and return the top 10 most attractive ones
     """
@@ -511,7 +523,7 @@ async def screen_sp500():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/screen/mag7", response_model=ScreeningResponse)
-async def screen_mag7():
+async def screen_mag7(current_user: User = Depends(get_current_user)):
     """
     Screen all MAG7 stocks and return them ranked by attractiveness
     """
@@ -566,7 +578,7 @@ async def serve_spa():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 @app.get("/api")
-async def api_root():
+async def api_root(current_user: User = Depends(get_current_user)):
     """API information endpoint"""
     return {
         "message": "Stock Analyzer API",
@@ -577,15 +589,20 @@ async def api_root():
 
 # New Watchlist Endpoints
 @app.post("/api/watchlist", response_model=WatchlistItemResponse)
-async def add_to_watchlist(item: WatchlistItemCreate, db: Session = Depends(get_db)):
+async def add_to_watchlist(
+    item: WatchlistItemCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
-    Add a stock to the watchlist
+    Add a stock to the watchlist (legacy endpoint - redirects to user watchlist)
     """
     try:
         db_item = WatchlistItem(
             symbol=item.symbol.upper(),
             company_name=item.company_name,
-            notes=item.notes
+            notes=item.notes,
+            user_id=current_user.id
         )
         db.add(db_item)
         db.commit()
@@ -596,18 +613,28 @@ async def add_to_watchlist(item: WatchlistItemCreate, db: Session = Depends(get_
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/watchlist", response_model=List[WatchlistItemResponse])
-async def get_watchlist(db: Session = Depends(get_db)):
+async def get_watchlist(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
-    Get all stocks in the watchlist
+    Get all stocks in the watchlist (legacy endpoint - shows only current user's watchlist)
     """
-    return db.query(WatchlistItem).all()
+    return db.query(WatchlistItem).filter(WatchlistItem.user_id == current_user.id).all()
 
 @app.delete("/api/watchlist/{item_id}")
-async def remove_from_watchlist(item_id: int, db: Session = Depends(get_db)):
+async def remove_from_watchlist(
+    item_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
-    Remove a stock from the watchlist
+    Remove a stock from the watchlist (legacy endpoint - checks for user ownership)
     """
-    item = db.query(WatchlistItem).filter(WatchlistItem.id == item_id).first()
+    item = db.query(WatchlistItem).filter(
+        WatchlistItem.id == item_id,
+        WatchlistItem.user_id == current_user.id
+    ).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     
@@ -616,16 +643,206 @@ async def remove_from_watchlist(item_id: int, db: Session = Depends(get_db)):
     return {"message": "Item deleted successfully"}
 
 @app.get("/api/watchlist/check/{symbol}")
-async def check_watchlist(symbol: str, db: Session = Depends(get_db)):
+async def check_watchlist(
+    symbol: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
-    Check if a stock is in the watchlist
+    Check if a stock is in the watchlist (legacy endpoint - checks current user's watchlist)
     """
-    item = db.query(WatchlistItem).filter(WatchlistItem.symbol == symbol.upper()).first()
+    item = db.query(WatchlistItem).filter(
+        WatchlistItem.symbol == symbol.upper(),
+        WatchlistItem.user_id == current_user.id
+    ).first()
     return {
         "in_watchlist": bool(item), 
         "item_id": item.id if item else None,
         "notes": item.notes if item else None
     }
+
+# Authentication endpoints
+@app.post("/api/auth/register", response_model=Token)
+async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user"""
+    db_user = get_user(db, email=user_data.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user = create_user(db=db, user=user_data)
+    
+    # Create access token for the new user
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "user_id": user.id}, 
+        expires_delta=access_token_expires
+    )
+    
+    return Token(
+        access_token=access_token, 
+        token_type="bearer", 
+        user_id=user.id,
+        email=user.email, 
+        display_name=user.display_name
+    )
+
+@app.post("/api/auth/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login to get access token"""
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "user_id": user.id}, 
+        expires_delta=access_token_expires
+    )
+    
+    return Token(
+        access_token=access_token, 
+        token_type="bearer", 
+        user_id=user.id,
+        email=user.email, 
+        display_name=user.display_name
+    )
+
+@app.get("/api/auth/me", response_model=UserResponse)
+async def get_user_profile(current_user: User = Depends(get_current_user)):
+    """Get current user profile"""
+    return current_user
+
+@app.get("/api/auth/google/login")
+async def login_google():
+    """Initiate Google OAuth login flow"""
+    # Set up Google OAuth
+    google = OAuth2Session(
+        client_id=GOOGLE_CLIENT_ID,
+        scope="openid email profile",
+        redirect_uri=GOOGLE_REDIRECT_URI,
+    )
+    
+    # Generate authorization URL
+    authorization_url, state = google.create_authorization_url(
+        "https://accounts.google.com/o/oauth2/auth",
+        access_type="offline",
+        prompt="select_account"
+    )
+    
+    # Return the authorization URL
+    return {"authorization_url": authorization_url}
+
+@app.get("/api/auth/google/callback")
+async def google_callback(code: str, state: str, db: Session = Depends(get_db)):
+    """Handle Google OAuth callback"""
+    try:
+        # Set up Google OAuth
+        google = OAuth2Session(
+            client_id=GOOGLE_CLIENT_ID,
+            redirect_uri=GOOGLE_REDIRECT_URI,
+        )
+        
+        # Get token using the authorization code
+        token = google.fetch_token(
+            "https://oauth2.googleapis.com/token",
+            code=code,
+            client_secret=GOOGLE_CLIENT_SECRET,
+        )
+        
+        # Get user info from Google
+        user_info_response = google.get("https://www.googleapis.com/oauth2/v3/userinfo")
+        user_info = user_info_response.json()
+        
+        # Create or update user in the database
+        user = create_or_update_google_user(db, user_info)
+        
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": user.email, "user_id": user.id},
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        )
+        
+        # Create a redirect URL with the token for the frontend
+        frontend_url = "/"
+        redirect_url = f"{frontend_url}?token={access_token}&userId={user.id}&email={user.email}&displayName={user.display_name or ''}"
+        
+        return RedirectResponse(url=redirect_url)
+        
+    except Exception as e:
+        logger.error(f"Error in Google callback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in Google authentication: {str(e)}")
+
+# Protected watchlist endpoints that require authentication
+@app.post("/api/user/watchlist", response_model=WatchlistItemResponse)
+async def add_to_user_watchlist(
+    item: WatchlistItemCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Add a stock to the user's watchlist"""
+    try:
+        db_item = WatchlistItem(
+            symbol=item.symbol.upper(),
+            company_name=item.company_name,
+            notes=item.notes,
+            user_id=current_user.id
+        )
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
+        return db_item
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/user/watchlist", response_model=List[WatchlistItemResponse])
+async def get_user_watchlist(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all stocks in the user's watchlist"""
+    return db.query(WatchlistItem).filter(WatchlistItem.user_id == current_user.id).all()
+
+@app.get("/api/user/watchlist/check/{symbol}")
+async def check_user_watchlist(
+    symbol: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Check if a stock is in the user's watchlist"""
+    item = db.query(WatchlistItem).filter(
+        WatchlistItem.symbol == symbol.upper(),
+        WatchlistItem.user_id == current_user.id
+    ).first()
+    
+    return {
+        "in_watchlist": bool(item), 
+        "item_id": item.id if item else None,
+        "notes": item.notes if item else None
+    }
+
+@app.delete("/api/user/watchlist/{item_id}")
+async def remove_from_user_watchlist(
+    item_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Remove a stock from the user's watchlist"""
+    item = db.query(WatchlistItem).filter(
+        WatchlistItem.id == item_id,
+        WatchlistItem.user_id == current_user.id
+    ).first()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    db.delete(item)
+    db.commit()
+    return {"message": "Item deleted successfully"}
 
 # Mount static files for React app if the build directory exists
 if os.path.exists(FRONTEND_DIR):
@@ -642,4 +859,4 @@ else:
     logger.warning("React app will not be served. Run 'npm run build' in frontend directory first.")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5001) 
+    uvicorn.run(app, host="0.0.0.0", port=5001)

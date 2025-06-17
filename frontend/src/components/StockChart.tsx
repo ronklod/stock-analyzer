@@ -1144,42 +1144,18 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: 'flex',
           gap: '0.5rem',
           padding: '0.25rem',
-          backgroundColor: '#e9ecef',
+          backgroundColor: '#e3f2fd',
           borderRadius: '6px',
         }}>
           <button 
-            className={`chart-type-button`}
+            className={`chart-type-button ${chartType === 'line' ? 'active' : ''}`}
             onClick={() => setChartType('line')}
-            style={{
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: chartType === 'line' ? '#fff' : 'transparent',
-              color: chartType === 'line' ? '#1a73e8' : '#4b5563',
-              boxShadow: chartType === 'line' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             Line
           </button>
           <button 
-            className={`chart-type-button`}
+            className={`chart-type-button ${chartType === 'candlestick' ? 'active' : ''}`}
             onClick={() => setChartType('candlestick')}
-            style={{
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: chartType === 'candlestick' ? '#fff' : 'transparent',
-              color: chartType === 'candlestick' ? '#1a73e8' : '#4b5563',
-              boxShadow: chartType === 'candlestick' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             Candlestick
           </button>
@@ -1188,96 +1164,36 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           display: 'flex',
           gap: '0.5rem',
           padding: '0.25rem',
-          backgroundColor: '#e9ecef',
+          backgroundColor: '#e3f2fd',
           borderRadius: '6px',
         }}>
           <button 
-            className={`time-interval-button`}
+            className={`time-interval-button ${timeInterval === '1d' ? 'active' : ''}`}
             onClick={() => setTimeInterval('1d')}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: timeInterval === '1d' ? '#fff' : 'transparent',
-              color: timeInterval === '1d' ? '#1a73e8' : '#4b5563',
-              boxShadow: timeInterval === '1d' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             1D
           </button>
           <button 
-            className={`time-interval-button`}
+            className={`time-interval-button ${timeInterval === 'week' ? 'active' : ''}`}
             onClick={() => setTimeInterval('week')}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: timeInterval === 'week' ? '#fff' : 'transparent',
-              color: timeInterval === 'week' ? '#1a73e8' : '#4b5563',
-              boxShadow: timeInterval === 'week' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             1W
           </button>
           <button 
-            className={`time-interval-button`}
+            className={`time-interval-button ${timeInterval === 'month' ? 'active' : ''}`}
             onClick={() => setTimeInterval('month')}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: timeInterval === 'month' ? '#fff' : 'transparent',
-              color: timeInterval === 'month' ? '#1a73e8' : '#4b5563',
-              boxShadow: timeInterval === 'month' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             1M
           </button>
           <button 
-            className={`time-interval-button`}
+            className={`time-interval-button ${timeInterval === 'year' ? 'active' : ''}`}
             onClick={() => setTimeInterval('year')}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: timeInterval === 'year' ? '#fff' : 'transparent',
-              color: timeInterval === 'year' ? '#1a73e8' : '#4b5563',
-              boxShadow: timeInterval === 'year' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             1Y
           </button>
           <button 
-            className={`time-interval-button`}
+            className={`time-interval-button ${timeInterval === 'all' ? 'active' : ''}`}
             onClick={() => setTimeInterval('all')}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: timeInterval === 'all' ? '#fff' : 'transparent',
-              color: timeInterval === 'all' ? '#1a73e8' : '#4b5563',
-              boxShadow: timeInterval === 'all' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
           >
             ALL
           </button>

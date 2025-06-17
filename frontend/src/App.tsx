@@ -7,10 +7,19 @@ import TechnicalAnalysisCard from './components/TechnicalAnalysisCard';
 import StockChart from './components/StockChart';
 import StockScreener from './components/StockScreener';
 import WatchlistPage from './components/WatchlistPage';
+import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 import './StockScreener.css';
 import { StockAnalysisResponse } from './types';
 import PriceTargetsCard from './components/PriceTargetsCard';
 import WatchlistButton from './components/WatchlistButton';
+import { useApi } from './utils/apiClient';
+
+// Auth pages
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import { AuthProvider } from './context/AuthContext';
 
 function StockAnalyzer() {
   const [searchParams] = useSearchParams();
@@ -18,6 +27,7 @@ function StockAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisData, setAnalysisData] = useState<StockAnalysisResponse | null>(null);
+  const api = useApi();
 
   // Check for ticker in URL params on mount
   useEffect(() => {
@@ -41,20 +51,7 @@ function StockAnalyzer() {
     setAnalysisData(null);
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ticker: symbolToAnalyze.toUpperCase() }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to analyze stock');
-      }
-
-      const data: StockAnalysisResponse = await response.json();
+      const data = await api.analyzeStock(symbolToAnalyze.toUpperCase());
       setAnalysisData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -64,8 +61,7 @@ function StockAnalyzer() {
   };
 
   return (
-    <div className="App">
-      <AppHeader />
+    <div className="App"> 
       <main className="App-main">
         <section className="search-section">
           <div className="search-container">
@@ -139,21 +135,7 @@ function StockAnalyzer() {
   );
 }
 
-function AppHeader() {
-  return (
-    <header className="App-header">
-      <h1>📈 Stock Analyzer</h1>
-      <p>Get AI-powered stock analysis with technical indicators and sentiment analysis</p>
-      <nav style={{ marginTop: '1rem' }}>
-        <Link to="/" style={{ color: 'white', marginRight: '2rem' }}>Analyzer</Link>
-        <Link to="/screener/nasdaq100" style={{ color: 'white', marginRight: '2rem' }}>NASDAQ-100 Screener</Link>
-        <Link to="/screener/sp500" style={{ color: 'white', marginRight: '2rem' }}>S&P 500 Screener</Link>
-        <Link to="/screener/mag7" style={{ color: 'white', marginRight: '2rem' }}>MAG7 Screener</Link>
-        <Link to="/watchlist" style={{ color: 'white' }}>My Watchlist</Link>
-      </nav>
-    </header>
-  );
-}
+
 
 function AppFooter() {
   return (
@@ -165,47 +147,38 @@ function AppFooter() {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<StockAnalyzer />} />
-        <Route path="/screener/nasdaq100" element={
-          <div className="App">
-            <AppHeader />
-            <main className="App-main">
-              <StockScreener type="nasdaq100" />
-            </main>
-            <AppFooter />
-          </div>
-        } />
-        <Route path="/screener/sp500" element={
-          <div className="App">
-            <AppHeader />
-            <main className="App-main">
-              <StockScreener type="sp500" />
-            </main>
-            <AppFooter />
-          </div>
-        } />
-        <Route path="/screener/mag7" element={
-          <div className="App">
-            <AppHeader />
-            <main className="App-main">
-              <StockScreener type="mag7" />
-            </main>
-            <AppFooter />
-          </div>
-        } />
-        <Route path="/watchlist" element={
-          <div className="App">
-            <AppHeader />
-            <main className="App-main">
-              <WatchlistPage />
-            </main>
-            <AppFooter />
-          </div>
-        } />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Header />
+          <main className="App-main">
+            <Routes>
+              {/* Public routes - only login and register */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* All other routes require authentication */}
+              <Route element={<ProtectedRoute />}>
+                {/* Main analyzer route */}
+                <Route path="/" element={<StockAnalyzer />} />
+                
+                {/* Screener routes */}
+                <Route path="/screener/nasdaq100" element={<StockScreener type="nasdaq100" />} />
+                <Route path="/screener/sp500" element={<StockScreener type="sp500" />} />
+                <Route path="/screener/mag7" element={<StockScreener type="mag7" />} />
+                
+                {/* User profile and watchlist */}
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/watchlist" element={<WatchlistPage />} />
+              </Route>
+            </Routes>
+          </main>
+          <footer className="App-footer">
+            <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
+          </footer>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

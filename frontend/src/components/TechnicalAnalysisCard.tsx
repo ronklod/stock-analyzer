@@ -225,20 +225,20 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
             style={{
               width: '100%',
               padding: '0.75rem',
-              backgroundColor: 'rgba(59, 130, 246, 0.05)',
+              backgroundColor: 'rgba(25, 118, 210, 0.05)',
               border: 'none',
               borderRadius: '0.5rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              color: '#666',
+              color: '#1976d2',
               fontSize: '0.9rem',
               fontWeight: 500,
               transition: 'background-color 0.2s',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(25, 118, 210, 0.05)'}
           >
             <span>Recent News Impact</span>
             <span style={{ 
