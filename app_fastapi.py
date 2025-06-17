@@ -392,6 +392,13 @@ def create_chart_data(analyzer) -> ChartData:
     if 'CCI' in df.columns:
         chart_data.indicators['cci'] = clean_float_list(df['CCI'].tolist())
     
+    # Add Demark indicator data
+    if 'buy_setup_count' in df.columns and 'sell_setup_count' in df.columns and 'demark_signal' in df.columns:
+        from demark_indicator import prepare_demark_data
+        demark_data = prepare_demark_data(analyzer.df)
+        chart_data.indicators['demarkBuySignals'] = demark_data['buySignals']
+        chart_data.indicators['demarkSellSignals'] = demark_data['sellSignals']
+    
     return chart_data
 
 @app.get("/api/health")

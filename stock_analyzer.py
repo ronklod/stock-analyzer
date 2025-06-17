@@ -24,6 +24,7 @@ import os
 from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings('ignore')
+from demark_indicator import calculate_demark_indicator, prepare_demark_data
 
 # Load environment variables
 load_dotenv()
@@ -94,6 +95,9 @@ class StockAnalyzer:
         
         # CCI (Commodity Channel Index)
         self.df['CCI'] = CCIIndicator(high=self.df['High'], low=self.df['Low'], close=self.df['Close'], window=20).cci()
+        
+        # Demark Indicator
+        self.df = calculate_demark_indicator(self.df)
         
         return True
     

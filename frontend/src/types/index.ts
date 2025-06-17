@@ -44,6 +44,12 @@ export interface Recommendation {
   description: string;
 }
 
+export interface DemarkSignal {
+  date: string;
+  price: number;
+  value: number;  // 1 for buy, -1 for sell
+}
+
 export interface ChartData {
   dates: string[];
   ohlc: {
@@ -65,6 +71,8 @@ export interface ChartData {
     macdSignal?: number[];
     macdHist?: number[];
     cci?: number[];
+    demarkBuySignals?: DemarkSignal[];
+    demarkSellSignals?: DemarkSignal[];
   };
 }
 

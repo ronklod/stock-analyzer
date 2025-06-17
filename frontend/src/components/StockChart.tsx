@@ -17,6 +17,7 @@ import { ChartData, SupportResistanceLevel } from '../types';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-date-fns';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
+import processDemarkSignals from './DemarkIndicator';
 
 // Register all required components
 ChartJS.register(
@@ -255,6 +256,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     l: filteredData.ohlc.low[index],
     c: filteredData.ohlc.close[index],
   }));
+  
+  // Add description for Demark indicator
+  indicatorDescriptions['Demark'] = 'Demark Indicator identifies potential price exhaustion points. The indicator counts consecutive bars where the close price meets specific criteria. A completed 9-count setup signals a potential reversal. Green triangles indicate buy signals (potential bottom), red triangles indicate sell signals (potential top).';
 
   // Price chart data
   const priceData = {
@@ -604,6 +608,61 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     ],
   };
 
+  // Process Demark Indicator Signals
+  const demarkSignals = filteredData.indicators.demarkBuySignals || filteredData.indicators.demarkSellSignals ?
+    processDemarkSignals(
+      filteredData.indicators.demarkBuySignals,
+      filteredData.indicators.demarkSellSignals,
+      filteredData.dates,
+      filteredData.ohlc.close
+    ) : { buyPoints: [], sellPoints: [] };
+
+  // Add Demark signals to chart data after processing
+  // We no longer need this code block as Demark signals are now added directly in the dedicated chart
+  // Removing reference to non-existent mainChartData
+
+  // Demark chart options
+  const demarkChartOptions: ChartOptions<any> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        display: true,
+      },
+      zoom: zoomOptions as any,
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+          displayFormats: {
+            day: 'MMM dd',
+          },
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        position: 'right' as const,
+        grid: {
+          color: 'rgba(156, 163, 175, 0.15)',
+        },
+        ticks: {
+          callback: function(value: any) {
+            return '$' + value;
+          },
+        },
+      },
+    },
+  };
+
   // Support & Resistance chart options
   const supportResistanceOptions: ChartOptions<any> = {
     responsive: true,
@@ -641,6 +700,10 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             
             if (label.includes('Support') || label.includes('Resistance')) {
               return `${label} (Strength: ${supportResistanceLevels[context.datasetIndex - 1]?.strength.toFixed(1)}%)`;
+            }
+
+            if (label === 'Demark Buy Signal' || label === 'Demark Sell Signal') {
+              return label;
             }
             
             return '';
@@ -1310,6 +1373,99 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           <ChartHeader title="Bollinger Bands" indicator="Bollinger" />
           <div className="chart-container" style={{ height: '300px' }}>
             <Chart type='line' data={bollingerData} options={bollingerOptions} />
+          </div>
+        </div>
+      )}
+      
+      {/* Demark Indicator Chart */}
+      {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
+        <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
+          <ChartHeader title="Demark Indicator" indicator="Demark" />
+          <div className="chart-container" style={{ height: '400px' }}>
+            <Chart 
+              type='candlestick'
+              data={{
+                datasets: [
+                  {
+                    label: 'Price',
+                    data: candlestickData,
+                    type: 'candlestick' as const,
+                    candlestick: {
+                      color: {
+                        up: '#26a69a',
+                        down: '#ef5350',
+                        unchanged: '#999',
+                      },
+                    },
+                  } as any,
+                  // Demark Buy Signals
+                  demarkSignals.buyPoints.length > 0 ? {
+                    label: 'Demark Buy Signal',
+                    data: demarkSignals.buyPoints,
+                    backgroundColor: 'rgba(52, 211, 153, 1)',
+                    borderColor: 'rgba(52, 211, 153, 1)',
+                    pointStyle: 'triangle',
+                    pointRadius: 10,
+                    pointHoverRadius: 15,
+                    showLine: false,
+                    type: 'scatter' as const,
+                  } : null,
+                  // Demark Sell Signals
+                  demarkSignals.sellPoints.length > 0 ? {
+                    label: 'Demark Sell Signal',
+                    data: demarkSignals.sellPoints,
+                    backgroundColor: 'rgba(239, 68, 68, 1)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    pointStyle: 'triangle',
+                    rotation: 180,
+                    pointRadius: 10,
+                    pointHoverRadius: 15,
+                    showLine: false,
+                    type: 'scatter' as const,
+                  } : null,
+                ].filter(Boolean) as any[],
+              }}
+              options={{
+                ...demarkChartOptions,
+                plugins: {
+                  ...demarkChartOptions.plugins,
+                  title: {
+                    display: true,
+                    text: 'Demark Indicator Buy/Sell Signals',
+                    font: {
+                      size: 16,
+                    },
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context: any) {
+                        const label = context.dataset.label || '';
+                        const raw = context.raw;
+                        
+                        if (raw && raw.o !== undefined) {
+                          return [
+                            `Open: $${raw.o.toFixed(2)}`,
+                            `High: $${raw.h.toFixed(2)}`,
+                            `Low: $${raw.l.toFixed(2)}`,
+                            `Close: $${raw.c.toFixed(2)}`,
+                          ];
+                        }
+                        
+                        if (label === 'Demark Buy Signal') {
+                          return 'Potential buy point (price exhaustion)';
+                        }
+                        
+                        if (label === 'Demark Sell Signal') {
+                          return 'Potential sell point (price exhaustion)';
+                        }
+                        
+                        return '';
+                      },
+                    },
+                  },
+                },
+              }}
+            />
           </div>
         </div>
       )}
