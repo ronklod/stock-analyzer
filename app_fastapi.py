@@ -5,9 +5,12 @@ FastAPI server for Stock Analyzer
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import uvicorn
+import os
 from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
 from sp500_analyzer import SP500Screener
@@ -31,11 +34,14 @@ app = FastAPI(title="Stock Analyzer API", version="1.0.0")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React frontend
+    allow_origins=["http://localhost:3000", "*"],  # React frontend and others
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Directory where the React build will be located
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend/build")
 
 # Helper functions to handle NaN and infinity values
 def clean_float(value):
@@ -553,9 +559,15 @@ async def screen_mag7():
         logger.error(f"Error during MAG7 screening: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/")
-async def root():
-    """Root endpoint with API information"""
+# Serve React app's static files
+@app.get("/", include_in_schema=False)
+async def serve_spa():
+    """Serve the React SPA's index.html"""
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/api")
+async def api_root():
+    """API information endpoint"""
     return {
         "message": "Stock Analyzer API",
         "version": "1.0.0",
@@ -614,6 +626,20 @@ async def check_watchlist(symbol: str, db: Session = Depends(get_db)):
         "item_id": item.id if item else None,
         "notes": item.notes if item else None
     }
+
+# Mount static files for React app if the build directory exists
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_DIR, "static")), name="static")
+    
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa_paths(full_path: str):
+        """Serve the React SPA for all non-API paths"""
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="API path not found")
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+else:
+    logger.warning(f"Frontend build directory not found: {FRONTEND_DIR}")
+    logger.warning("React app will not be served. Run 'npm run build' in frontend directory first.")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001) 

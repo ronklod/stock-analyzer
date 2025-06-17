@@ -134,6 +134,32 @@ We migrated from Flask to FastAPI for several benefits:
 - **Data Validation**: Automatic request/response validation with Pydantic
 - **Modern Python**: Uses latest Python features and best practices
 
+## Deployment Options
+
+### Development Mode
+
+Run both servers separately for development:
+
+```bash
+./run_webapp.sh
+```
+
+This starts:
+- FastAPI backend on http://localhost:5001
+- React dev server on http://localhost:3000
+
+### Production Mode
+
+Build React app and serve it directly from FastAPI:
+
+```bash
+./run_webapp_prod.sh
+```
+
+This:
+1. Builds the React frontend
+2. Serves both frontend and API from http://localhost:5001
+
 ## Troubleshooting
 
 1. **CORS Issues**: Make sure the FastAPI server has CORS middleware configured (already set up in app_fastapi.py)
@@ -145,6 +171,11 @@ We migrated from Flask to FastAPI for several benefits:
 3. **Module Not Found**: Make sure to run `npm install` in the frontend directory
 
 4. **API Connection Failed**: Ensure the backend is running before making requests from the frontend
+
+5. **Production Build Issues**: If the production build fails, check:
+   - Node.js and npm are installed
+   - All dependencies are installed with `npm install`
+   - There are no TypeScript errors in the codebase
 
 ## Future Enhancements
 

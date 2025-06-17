@@ -23,7 +23,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
     setResults(null);
 
     try {
-      const response = await fetch(`http://localhost:5001/api/screen/${type}`);
+      const response = await fetch(`/api/screen/${type}`);
       
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);

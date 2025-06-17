@@ -41,7 +41,7 @@ function StockAnalyzer() {
     setAnalysisData(null);
 
     try {
-      const response = await fetch('http://localhost:5001/api/analyze', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

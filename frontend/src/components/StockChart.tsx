@@ -11,6 +11,9 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
+  LineController,
+  BarController,
+  ScatterController,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 import { ChartData, SupportResistanceLevel } from '../types';
@@ -19,7 +22,7 @@ import 'chartjs-adapter-date-fns';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import processDemarkSignals from './DemarkIndicator';
 
-// Register all required components
+// Register all required components and controllers
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -30,6 +33,9 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  LineController,    // Explicitly register the line controller
+  BarController,     // Explicitly register the bar controller
+  ScatterController, // Explicitly register the scatter controller
   CandlestickController,
   CandlestickElement,
   OhlcController,
