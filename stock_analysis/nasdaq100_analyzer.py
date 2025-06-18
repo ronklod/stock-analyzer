@@ -1,32 +1,31 @@
 #!/usr/bin/env python3
 """
-S&P 500 Stock Screener
-Analyzes all S&P 500 stocks and returns the most attractive ones
+NASDAQ-100 Stock Screener
+Analyzes all NASDAQ-100 stocks and returns the most attractive ones
 """
 
 import yfinance as yf
 import pandas as pd
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 from datetime import datetime
 import concurrent.futures
 import time
 
-# S&P 500 stock symbols (as of 2024)
-SP500_SYMBOLS = [
-    'AAPL', 'MSFT', 'AMZN', 'NVDA', 'GOOGL', 'META', 'GOOG', 'BRK.B', 'UNH', 'XOM',
-    'JPM', 'JNJ', 'V', 'PG', 'MA', 'HD', 'CVX', 'ABBV', 'MRK', 'LLY',
-    'AVGO', 'PEP', 'KO', 'COST', 'CSCO', 'TMO', 'ABT', 'MCD', 'ACN', 'WMT',
-    'BAC', 'CRM', 'DHR', 'PFE', 'ADBE', 'LIN', 'CMCSA', 'NKE', 'NEE', 'TXN',
-    'VZ', 'PM', 'RTX', 'ORCL', 'UPS', 'HON', 'T', 'QCOM', 'INTC', 'BMY',
-    'UNP', 'WFC', 'MS', 'AMGN', 'BA', 'LOW', 'INTU', 'COP', 'SPGI', 'GS',
-    'BLK', 'AMD', 'CAT', 'DE', 'AMAT', 'AXP', 'ISRG', 'BKNG', 'SBUX', 'PLD',
-    'MDLZ', 'ADI', 'TJX', 'GILD', 'MMC', 'CVS', 'CI', 'VRTX', 'SYK', 'C',
-    'CB', 'REGN', 'DIS', 'BDX', 'EOG', 'SO', 'TMUS', 'MO', 'ZTS', 'LRCX',
-    'CME', 'SCHW', 'PGR', 'AON', 'BSX', 'SLB', 'NOC', 'GE', 'ITW', 'CSX'
-    # Note: This is a partial list. In production, you should include all 500 symbols
+# NASDAQ-100 stock symbols (as of 2024)
+NASDAQ_100_SYMBOLS = [
+    'AAPL', 'MSFT', 'AMZN', 'NVDA', 'META', 'TSLA', 'GOOGL', 'GOOG', 'AVGO', 'PEP',
+    'COST', 'ADBE', 'CSCO', 'CMCSA', 'TMUS', 'NFLX', 'INTC', 'AMD', 'INTU', 'AMGN',
+    'AMAT', 'ISRG', 'TXN', 'QCOM', 'BKNG', 'HON', 'ADP', 'VRTX', 'SBUX', 'GILD',
+    'MU', 'ADI', 'LRCX', 'MDLZ', 'REGN', 'MELI', 'PYPL', 'SNPS', 'CDNS', 'KLAC',
+    'PDD', 'ASML', 'ABNB', 'CHTR', 'MAR', 'NXPI', 'MRVL', 'ORLY', 'FTNT', 'CSX',
+    'DASH', 'ADSK', 'PCAR', 'CPRT', 'PAYX', 'WDAY', 'ROST', 'ODFL', 'BIIB', 'FAST',
+    'EA', 'VRSK', 'CTSH', 'IDXX', 'CSGP', 'DXCM', 'TEAM', 'ANSS', 'ON', 'CDW',
+    'ZS', 'ILMN', 'CRWD', 'SGEN', 'MCHP', 'CTAS', 'DDOG', 'GEHC', 'FANG', 'MNST',
+    'DLTR', 'KDP', 'AEP', 'KHC', 'PANW', 'AZN', 'FICO', 'EXC', 'CCEP', 'TTWO',
+    'LULU', 'WBD', 'GFS', 'TROW', 'WBA', 'XEL', 'EBAY', 'SIRI', 'LCID', 'RIVN'
 ]
 
-class SP500Screener:
+class NASDAQ100Screener:
     def __init__(self):
         self.results = []
         self.failed_symbols = []
@@ -133,16 +132,16 @@ class SP500Screener:
         return score
     
     def screen_all_stocks(self, max_workers=10):
-        """Screen all S&P 500 stocks in parallel"""
-        print(f"Starting S&P 500 stock screening at {datetime.now()}")
-        print(f"Analyzing {len(SP500_SYMBOLS)} stocks...\n")
+        """Screen all NASDAQ-100 stocks in parallel"""
+        print(f"Starting NASDAQ-100 stock screening at {datetime.now()}")
+        print(f"Analyzing {len(NASDAQ_100_SYMBOLS)} stocks...\n")
         
         # Use ThreadPoolExecutor for parallel processing
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_symbol = {
                 executor.submit(self.analyze_stock, symbol): symbol 
-                for symbol in SP500_SYMBOLS
+                for symbol in NASDAQ_100_SYMBOLS
             }
             
             # Collect results as they complete
@@ -165,7 +164,7 @@ class SP500Screener:
         """Get top N stocks by attractiveness score"""
         return self.results[:n]
     
-    def save_results(self, filename='sp500_screening_results.csv'):
+    def save_results(self, filename='nasdaq100_screening_results.csv'):
         """Save results to CSV file"""
         if self.results:
             df = pd.DataFrame(self.results)
@@ -174,14 +173,14 @@ class SP500Screener:
 
 def main():
     """Main function for command-line usage"""
-    screener = SP500Screener()
+    screener = NASDAQ100Screener()
     
     # Screen all stocks
     top_stocks = screener.screen_all_stocks()
     
     # Display results
     print("\n" + "="*80)
-    print("TOP 10 MOST ATTRACTIVE S&P 500 STOCKS")
+    print("TOP 10 MOST ATTRACTIVE NASDAQ-100 STOCKS")
     print("="*80 + "\n")
     
     for i, stock in enumerate(top_stocks, 1):

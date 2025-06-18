@@ -3,7 +3,7 @@
 Example usage of the Stock Analyzer
 """
 
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 
 def analyze_multiple_stocks():
     """Example: Analyze multiple stocks"""

@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 """
-MAG7 Stock Screener
-Analyzes all Magnificent Seven (MAG7) stocks and returns them ranked by attractiveness
+S&P 500 Stock Screener
+Analyzes all S&P 500 stocks and returns the most attractive ones
 """
 
 import yfinance as yf
 import pandas as pd
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 from datetime import datetime
 import concurrent.futures
 import time
 
-# Magnificent Seven (MAG7) stock symbols
-MAG7_SYMBOLS = [
-    'AAPL',  # Apple
-    'MSFT',  # Microsoft
-    'GOOGL', # Alphabet (Google) Class A
-    'AMZN',  # Amazon
-    'NVDA',  # NVIDIA
-    'META',  # Meta (formerly Facebook)
-    'TSLA'   # Tesla
+# S&P 500 stock symbols (as of 2024)
+SP500_SYMBOLS = [
+    'AAPL', 'MSFT', 'AMZN', 'NVDA', 'GOOGL', 'META', 'GOOG', 'BRK.B', 'UNH', 'XOM',
+    'JPM', 'JNJ', 'V', 'PG', 'MA', 'HD', 'CVX', 'ABBV', 'MRK', 'LLY',
+    'AVGO', 'PEP', 'KO', 'COST', 'CSCO', 'TMO', 'ABT', 'MCD', 'ACN', 'WMT',
+    'BAC', 'CRM', 'DHR', 'PFE', 'ADBE', 'LIN', 'CMCSA', 'NKE', 'NEE', 'TXN',
+    'VZ', 'PM', 'RTX', 'ORCL', 'UPS', 'HON', 'T', 'QCOM', 'INTC', 'BMY',
+    'UNP', 'WFC', 'MS', 'AMGN', 'BA', 'LOW', 'INTU', 'COP', 'SPGI', 'GS',
+    'BLK', 'AMD', 'CAT', 'DE', 'AMAT', 'AXP', 'ISRG', 'BKNG', 'SBUX', 'PLD',
+    'MDLZ', 'ADI', 'TJX', 'GILD', 'MMC', 'CVS', 'CI', 'VRTX', 'SYK', 'C',
+    'CB', 'REGN', 'DIS', 'BDX', 'EOG', 'SO', 'TMUS', 'MO', 'ZTS', 'LRCX',
+    'CME', 'SCHW', 'PGR', 'AON', 'BSX', 'SLB', 'NOC', 'GE', 'ITW', 'CSX'
+    # Note: This is a partial list. In production, you should include all 500 symbols
 ]
 
-class MAG7Screener:
+class SP500Screener:
     def __init__(self):
         self.results = []
         self.failed_symbols = []
@@ -128,17 +132,17 @@ class MAG7Screener:
         
         return score
     
-    def screen_all_stocks(self, max_workers=7):  # Set to 7 since we only have 7 stocks
-        """Screen all MAG7 stocks in parallel"""
-        print(f"Starting MAG7 stock screening at {datetime.now()}")
-        print(f"Analyzing {len(MAG7_SYMBOLS)} stocks...\n")
+    def screen_all_stocks(self, max_workers=10):
+        """Screen all S&P 500 stocks in parallel"""
+        print(f"Starting S&P 500 stock screening at {datetime.now()}")
+        print(f"Analyzing {len(SP500_SYMBOLS)} stocks...\n")
         
         # Use ThreadPoolExecutor for parallel processing
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_symbol = {
                 executor.submit(self.analyze_stock, symbol): symbol 
-                for symbol in MAG7_SYMBOLS
+                for symbol in SP500_SYMBOLS
             }
             
             # Collect results as they complete
@@ -155,13 +159,13 @@ class MAG7Screener:
         if self.failed_symbols:
             print(f"Failed to analyze: {', '.join(self.failed_symbols)}")
         
-        return self.results  # Return all stocks since we only have 7
+        return self.results[:10]  # Return top 10
     
-    def get_top_stocks(self, n=7):
+    def get_top_stocks(self, n=10):
         """Get top N stocks by attractiveness score"""
         return self.results[:n]
     
-    def save_results(self, filename='mag7_screening_results.csv'):
+    def save_results(self, filename='sp500_screening_results.csv'):
         """Save results to CSV file"""
         if self.results:
             df = pd.DataFrame(self.results)
@@ -170,17 +174,17 @@ class MAG7Screener:
 
 def main():
     """Main function for command-line usage"""
-    screener = MAG7Screener()
+    screener = SP500Screener()
     
     # Screen all stocks
-    ranked_stocks = screener.screen_all_stocks()
+    top_stocks = screener.screen_all_stocks()
     
     # Display results
     print("\n" + "="*80)
-    print("MAG7 STOCKS RANKED BY ATTRACTIVENESS")
+    print("TOP 10 MOST ATTRACTIVE S&P 500 STOCKS")
     print("="*80 + "\n")
     
-    for i, stock in enumerate(ranked_stocks, 1):
+    for i, stock in enumerate(top_stocks, 1):
         print(f"{i}. {stock['symbol']} - {stock['name']}")
         print(f"   Sector: {stock['sector']}")
         print(f"   Current Price: ${stock['current_price']:.2f}")

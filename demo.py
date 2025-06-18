@@ -3,7 +3,7 @@
 Demo of the Stock Analyzer
 """
 
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 
 def demo():
     print("\n" + "="*60)

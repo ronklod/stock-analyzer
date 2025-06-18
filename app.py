@@ -9,7 +9,7 @@ import json
 import base64
 from io import BytesIO
 import plotly.graph_objects as go
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 import logging
 
 # Configure logging

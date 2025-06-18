@@ -16,10 +16,10 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-from stock_analyzer import StockAnalyzer
-from nasdaq100_analyzer import NASDAQ100Screener
-from sp500_analyzer import SP500Screener
-from mag7_analyzer import MAG7Screener
+from stock_analysis.stock_analyzer import StockAnalyzer
+from stock_analysis.nasdaq100_analyzer import NASDAQ100Screener
+from stock_analysis.sp500_analyzer import SP500Screener
+from stock_analysis.mag7_analyzer import MAG7Screener
 from database.database import get_db, engine
 from database import WatchlistItem, User, Base
 from sqlalchemy.orm import Session
@@ -413,7 +413,7 @@ def create_chart_data(analyzer) -> ChartData:
     
     # Add Demark indicator data
     if 'buy_setup_count' in df.columns and 'sell_setup_count' in df.columns and 'demark_signal' in df.columns:
-        from demark_indicator import prepare_demark_data
+        from stock_analysis.demark_indicator import prepare_demark_data
         demark_data = prepare_demark_data(analyzer.df)
         chart_data.indicators['demarkBuySignals'] = demark_data['buySignals']
         chart_data.indicators['demarkSellSignals'] = demark_data['sellSignals']

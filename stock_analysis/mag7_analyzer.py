@@ -1,31 +1,28 @@
 #!/usr/bin/env python3
 """
-NASDAQ-100 Stock Screener
-Analyzes all NASDAQ-100 stocks and returns the most attractive ones
+MAG7 Stock Screener
+Analyzes all Magnificent Seven (MAG7) stocks and returns them ranked by attractiveness
 """
 
 import yfinance as yf
 import pandas as pd
-from stock_analyzer import StockAnalyzer
+from stock_analysis.stock_analyzer import StockAnalyzer
 from datetime import datetime
 import concurrent.futures
 import time
 
-# NASDAQ-100 stock symbols (as of 2024)
-NASDAQ_100_SYMBOLS = [
-    'AAPL', 'MSFT', 'AMZN', 'NVDA', 'META', 'TSLA', 'GOOGL', 'GOOG', 'AVGO', 'PEP',
-    'COST', 'ADBE', 'CSCO', 'CMCSA', 'TMUS', 'NFLX', 'INTC', 'AMD', 'INTU', 'AMGN',
-    'AMAT', 'ISRG', 'TXN', 'QCOM', 'BKNG', 'HON', 'ADP', 'VRTX', 'SBUX', 'GILD',
-    'MU', 'ADI', 'LRCX', 'MDLZ', 'REGN', 'MELI', 'PYPL', 'SNPS', 'CDNS', 'KLAC',
-    'PDD', 'ASML', 'ABNB', 'CHTR', 'MAR', 'NXPI', 'MRVL', 'ORLY', 'FTNT', 'CSX',
-    'DASH', 'ADSK', 'PCAR', 'CPRT', 'PAYX', 'WDAY', 'ROST', 'ODFL', 'BIIB', 'FAST',
-    'EA', 'VRSK', 'CTSH', 'IDXX', 'CSGP', 'DXCM', 'TEAM', 'ANSS', 'ON', 'CDW',
-    'ZS', 'ILMN', 'CRWD', 'SGEN', 'MCHP', 'CTAS', 'DDOG', 'GEHC', 'FANG', 'MNST',
-    'DLTR', 'KDP', 'AEP', 'KHC', 'PANW', 'AZN', 'FICO', 'EXC', 'CCEP', 'TTWO',
-    'LULU', 'WBD', 'GFS', 'TROW', 'WBA', 'XEL', 'EBAY', 'SIRI', 'LCID', 'RIVN'
+# Magnificent Seven (MAG7) stock symbols
+MAG7_SYMBOLS = [
+    'AAPL',  # Apple
+    'MSFT',  # Microsoft
+    'GOOGL', # Alphabet (Google) Class A
+    'AMZN',  # Amazon
+    'NVDA',  # NVIDIA
+    'META',  # Meta (formerly Facebook)
+    'TSLA'   # Tesla
 ]
 
-class NASDAQ100Screener:
+class MAG7Screener:
     def __init__(self):
         self.results = []
         self.failed_symbols = []
@@ -131,17 +128,17 @@ class NASDAQ100Screener:
         
         return score
     
-    def screen_all_stocks(self, max_workers=10):
-        """Screen all NASDAQ-100 stocks in parallel"""
-        print(f"Starting NASDAQ-100 stock screening at {datetime.now()}")
-        print(f"Analyzing {len(NASDAQ_100_SYMBOLS)} stocks...\n")
+    def screen_all_stocks(self, max_workers=7):  # Set to 7 since we only have 7 stocks
+        """Screen all MAG7 stocks in parallel"""
+        print(f"Starting MAG7 stock screening at {datetime.now()}")
+        print(f"Analyzing {len(MAG7_SYMBOLS)} stocks...\n")
         
         # Use ThreadPoolExecutor for parallel processing
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_symbol = {
                 executor.submit(self.analyze_stock, symbol): symbol 
-                for symbol in NASDAQ_100_SYMBOLS
+                for symbol in MAG7_SYMBOLS
             }
             
             # Collect results as they complete
@@ -158,13 +155,13 @@ class NASDAQ100Screener:
         if self.failed_symbols:
             print(f"Failed to analyze: {', '.join(self.failed_symbols)}")
         
-        return self.results[:10]  # Return top 10
+        return self.results  # Return all stocks since we only have 7
     
-    def get_top_stocks(self, n=10):
+    def get_top_stocks(self, n=7):
         """Get top N stocks by attractiveness score"""
         return self.results[:n]
     
-    def save_results(self, filename='nasdaq100_screening_results.csv'):
+    def save_results(self, filename='mag7_screening_results.csv'):
         """Save results to CSV file"""
         if self.results:
             df = pd.DataFrame(self.results)
@@ -173,17 +170,17 @@ class NASDAQ100Screener:
 
 def main():
     """Main function for command-line usage"""
-    screener = NASDAQ100Screener()
+    screener = MAG7Screener()
     
     # Screen all stocks
-    top_stocks = screener.screen_all_stocks()
+    ranked_stocks = screener.screen_all_stocks()
     
     # Display results
     print("\n" + "="*80)
-    print("TOP 10 MOST ATTRACTIVE NASDAQ-100 STOCKS")
+    print("MAG7 STOCKS RANKED BY ATTRACTIVENESS")
     print("="*80 + "\n")
     
-    for i, stock in enumerate(top_stocks, 1):
+    for i, stock in enumerate(ranked_stocks, 1):
         print(f"{i}. {stock['symbol']} - {stock['name']}")
         print(f"   Sector: {stock['sector']}")
         print(f"   Current Price: ${stock['current_price']:.2f}")
