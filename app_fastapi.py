@@ -577,6 +577,38 @@ async def serve_spa():
     """Serve the React SPA's index.html"""
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
+# Debug route to create a test user
+@app.get("/api/debug/create_test_user")
+async def create_test_user(db: Session = Depends(get_db)):
+    """Create a test user for debugging purposes"""
+    from database import User, pwd_context
+    
+    # Check if test user already exists
+    test_user = db.query(User).filter(User.email == "test@example.com").first()
+    if test_user:
+        return {"message": "Test user already exists", "user_id": test_user.id}
+    
+    # Create a new test user
+    hashed_password = pwd_context.hash("password123")
+    new_user = User(
+        email="test@example.com",
+        hashed_password=hashed_password,
+        display_name="Test User",
+        is_active=True
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return {
+        "message": "Test user created successfully",
+        "user": {
+            "id": new_user.id,
+            "email": new_user.email,
+            "display_name": new_user.display_name
+        }
+    }
+
 @app.get("/api")
 async def api_root(current_user: User = Depends(get_current_user)):
     """API information endpoint"""
@@ -689,12 +721,22 @@ async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
 @app.post("/api/auth/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login to get access token"""
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
+    logging.info(f"Login attempt for user: {form_data.username}")
+    try:
+        user = authenticate_user(db, form_data.username, form_data.password)
+        if not user:
+            logging.warning(f"Failed login attempt for {form_data.username}: Invalid credentials")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        logging.info(f"Successful login for user: {form_data.username}")
+    except Exception as e:
+        logging.error(f"Error during login: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login error: {str(e)}",
         )
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

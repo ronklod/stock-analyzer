@@ -26,11 +26,25 @@ export const useApi = () => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+      try {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        const errorText = await response.text();
+        console.error('Response text:', errorText);
+        throw new Error(`API request failed: ${response.statusText} (${response.status})`);
+      }
     }
 
-    return response.json();
+    try {
+      return await response.json();
+    } catch (parseError) {
+      console.error('Error parsing successful response:', parseError);
+      const responseText = await response.text();
+      console.error('Response text:', responseText);
+      throw new Error('Invalid response format from server');
+    }
   };
 
   /**

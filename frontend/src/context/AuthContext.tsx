@@ -87,11 +87,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Login failed');
+        } catch (parseError) {
+          // If we can't parse the error as JSON, return the status text
+          console.error('Error parsing response:', parseError);
+          const errorText = await response.text();
+          console.error('Response text:', errorText);
+          throw new Error(`Login failed: ${response.statusText}`);
+        }
       }
       
-      const data = await response.json();
+      // Safely parse the response
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Error parsing successful response:', parseError);
+        throw new Error('Invalid response format from server');
+      }
       
       const userData = {
         id: data.user_id,
