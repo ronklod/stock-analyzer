@@ -190,6 +190,19 @@ class StockAnalyzer:
                 bearish_count += 1.5
             else:
                 signals['CCI'] = f'Neutral ({latest["CCI"]:.1f})'
+
+        # Demark Indicator Analysis
+        if 'demark_signal' in self.df.columns:
+            last_10_days = self.df.iloc[-10:]['demark_signal']
+            # Check if there's any buy or sell signal in the last 10 days
+            if (last_10_days == 1).any():
+                signals['Demark_Indicator'] = 'Bullish'
+                bullish_count += 1.5  # Give it a meaningful weight
+            elif (last_10_days == -1).any():
+                signals['Demark_Indicator'] = 'Bearish'
+                bearish_count += 1.5
+            else:
+                signals['Demark_Indicator'] = 'Neutral'
         
         # Calculate technical score (-100 to 100)
         total_signals = bullish_count + bearish_count
@@ -491,6 +504,13 @@ class StockAnalyzer:
             elif 'Overbought' in tech_signals['Bollinger_Bands']:
                 key_points.append("price touched upper Bollinger Band (overbought)")
         
+        # Demark Indicator
+        if 'Demark_Indicator' in tech_signals:
+            if tech_signals['Demark_Indicator'] == 'Bullish':
+                key_points.append("Demark indicator shows potential bullish reversal signal")
+            elif tech_signals['Demark_Indicator'] == 'Bearish':
+                key_points.append("Demark indicator shows potential bearish reversal signal")
+        
         if key_points:
             descriptions.append("Key factors: " + ", ".join(key_points))
         
@@ -606,4 +626,4 @@ def main():
         print("\n" + "-"*60 + "\n")
 
 if __name__ == "__main__":
-    main() 
+    main()

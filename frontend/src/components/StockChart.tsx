@@ -107,7 +107,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     'RSI': 'Relative Strength Index (RSI) measures momentum. Values above 70 indicate overbought conditions (potential price drop), while values below 30 indicate oversold conditions (potential price rise). The RSI helps identify potential reversal points.',
     'MACD': 'Moving Average Convergence Divergence (MACD) identifies trend changes. When the MACD line (blue) crosses above the signal line (red), it\'s a bullish signal. When it crosses below, it\'s bearish. The histogram shows the difference between these lines.',
     'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions. CCI helps identify trend reversals and extreme market conditions.',
-    'Bollinger': 'Bollinger Bands measure volatility using standard deviations. When bands narrow, it indicates low volatility (squeeze). When price touches the upper band, it may be overbought; touching the lower band may indicate oversold conditions. The middle band is a 20-day moving average.'
+    'Bollinger': 'Bollinger Bands measure volatility using standard deviations. When bands narrow, it indicates low volatility (squeeze). When price touches the upper band, it may be overbought; touching the lower band may indicate oversold conditions. The middle band is a 20-day moving average.',
+    'Demark': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. Buy signals (green triangles) appear after a sequence of lower closes, indicating a potential upward reversal. Sell signals (red triangles) appear after a sequence of higher closes, indicating a potential downward reversal.'
   };
 
   // Chart header component with info icon
@@ -1403,4 +1404,4 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   );
 };
 
-export default StockChart; 
+export default StockChart;

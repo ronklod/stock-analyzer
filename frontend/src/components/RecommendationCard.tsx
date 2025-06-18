@@ -14,7 +14,7 @@ const RecommendationCard: React.FC<Props> = ({ recommendation }) => {
 
   const scoreExplanation = `The recommendation score is calculated using a weighted combination of technical and sentiment analysis:
 
-• Technical Score (70% weight): Based on multiple indicators including moving averages (SMA 20/50/150/200), RSI, MACD, Bollinger Bands, and CCI. Each indicator contributes bullish or bearish signals.
+• Technical Score (70% weight): Based on multiple indicators including moving averages (SMA 20/50/150/200), RSI, MACD, Bollinger Bands, CCI, and Demark Indicator. Each indicator contributes bullish or bearish signals.
 
 • Sentiment Score (30% weight): Derived from analyzing recent news articles and their sentiment using natural language processing.
 
@@ -161,4 +161,4 @@ Recommendation thresholds:
   );
 };
 
-export default RecommendationCard; 
+export default RecommendationCard;

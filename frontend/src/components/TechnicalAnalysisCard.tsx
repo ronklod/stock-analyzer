@@ -23,11 +23,12 @@ const TechnicalAnalysisCard: React.FC<Props> = ({ technicalAnalysis, sentimentAn
     'RSI': 'Relative Strength Index (RSI) measures momentum. Values above 70 indicate overbought conditions (potential price drop), while values below 30 indicate oversold conditions (potential price rise).',
     'MACD': 'Moving Average Convergence Divergence (MACD) identifies trend changes. When MACD crosses above the signal line, it\'s bullish. When it crosses below, it\'s bearish.',
     'Bollinger_Bands': 'Bollinger Bands measure volatility. Price touching the upper band suggests overbought conditions, while touching the lower band suggests oversold conditions.',
-    'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions.'
+    'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions.',
+    'Demark_Indicator': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. A buy signal occurs after 9 consecutive closes lower than the close 4 bars earlier, indicating a potential upward reversal. A sell signal occurs after 9 consecutive closes higher than the close 4 bars earlier, indicating a potential downward reversal.'
   };
 
   const shouldShowInfo = (indicator: string) => {
-    return ['RSI', 'MACD', 'Bollinger_Bands', 'CCI'].includes(indicator);
+    return ['RSI', 'MACD', 'Bollinger_Bands', 'CCI', 'Demark_Indicator'].includes(indicator);
   };
 
   const formatDate = (dateStr: string) => {
@@ -315,4 +316,4 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
   );
 };
 
-export default TechnicalAnalysisCard; 
+export default TechnicalAnalysisCard;
