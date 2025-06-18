@@ -20,7 +20,8 @@ from stock_analyzer import StockAnalyzer
 from nasdaq100_analyzer import NASDAQ100Screener
 from sp500_analyzer import SP500Screener
 from mag7_analyzer import MAG7Screener
-from database import get_db, WatchlistItem, User, Base, engine
+from database.database import get_db, engine
+from database import WatchlistItem, User, Base
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import logging

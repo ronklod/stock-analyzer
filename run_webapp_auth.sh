@@ -36,7 +36,7 @@ pip install "passlib[bcrypt]" "python-jose[cryptography]" python-multipart authl
 cd frontend && npm install react-google-login && cd ..
 
 echo "Creating database tables..."
-python -c "from database import Base, engine; Base.metadata.create_all(bind=engine)"
+python -c "from database import Base; from database.database import engine; Base.metadata.create_all(bind=engine)"
 
 echo "Starting Backend Server (FastAPI)..."
 echo "Backend will run on http://localhost:5001"
