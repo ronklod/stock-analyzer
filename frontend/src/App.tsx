@@ -130,20 +130,12 @@ function StockAnalyzer() {
           </section>
         )}
       </main>
-      <AppFooter />
+      
     </div>
   );
 }
 
 
-
-function AppFooter() {
-  return (
-    <footer className="App-footer">
-      <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-    </footer>
-  );
-}
 
 function App() {
   return (
@@ -173,9 +165,7 @@ function App() {
               </Route>
             </Routes>
           </main>
-          <footer className="App-footer">
-            <p>© 2024 Stock Analyzer. Data provided by Yahoo Finance.</p>
-          </footer>
+
         </div>
       </Router>
     </AuthProvider>
