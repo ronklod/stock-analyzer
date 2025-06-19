@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -10,14 +10,41 @@ import {
   Avatar,
   Divider,
   Card,
-  CardContent
+  CardContent,
+  TextField,
+  Alert,
+  Collapse,
+  IconButton
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LockIcon from '@mui/icons-material/Lock';
+import CloseIcon from '@mui/icons-material/Close';
 import './Auth.css';
 
 const ProfilePage: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, changePassword, updateProfile } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  
+  // Display name state
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [originalDisplayName, setOriginalDisplayName] = useState(user?.displayName || '');
+  const [editingName, setEditingName] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [nameSuccess, setNameSuccess] = useState(false);
+
+  // Set initial display name when user is loaded
+  React.useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setOriginalDisplayName(user.displayName || '');
+    }
+  }, [user]);
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -26,6 +53,80 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess(false);
+
+    // Validation
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      await changePassword(currentPassword, newPassword);
+      setPasswordSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      if (error instanceof Error) {
+        setPasswordError(error.message);
+      } else {
+        setPasswordError('Failed to change password');
+      }
+    }
+  };
+
+  const togglePasswordForm = () => {
+    setShowPasswordForm(!showPasswordForm);
+    if (!showPasswordForm) {
+      setPasswordError('');
+      setPasswordSuccess(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+  };
+  
+  const startEditingName = () => {
+    setEditingName(true);
+    setNameError('');
+    setNameSuccess(false);
+  };
+  
+  const cancelEditingName = () => {
+    setEditingName(false);
+    setDisplayName(originalDisplayName);
+    setNameError('');
+  };
+  
+  const handleNameUpdate = async () => {
+    if (!displayName || displayName.trim() === '') {
+      setNameError('Display name cannot be empty');
+      return;
+    }
+    
+    try {
+      await updateProfile(displayName);
+      setNameSuccess(true);
+      setOriginalDisplayName(displayName);
+      setEditingName(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        setNameError(error.message);
+      } else {
+        setNameError('Failed to update display name');
+      }
+    }
   };
 
   return (
@@ -65,12 +166,78 @@ const ProfilePage: React.FC = () => {
 
           <Card variant="outlined" sx={{ mb: 2 }}>
             <CardContent>
-              <Typography variant="subtitle2" color="text.secondary">
-                Display Name
-              </Typography>
-              <Typography variant="body1">
-                {user ? (user.displayName || 'Not set') : ''}
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Display Name
+                  </Typography>
+                  
+                  {!editingName ? (
+                    <Typography variant="body1">
+                      {user ? (user.displayName || 'Not set') : ''}
+                    </Typography>
+                  ) : (
+                    <Box component="form" sx={{ mt: 1 }}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        label="Display Name"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        error={!!nameError}
+                        helperText={nameError}
+                        sx={{ mb: 2 }}
+                      />
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button 
+                          variant="contained" 
+                          size="small"
+                          onClick={handleNameUpdate}
+                        >
+                          Save
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={cancelEditingName}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+                
+                {!editingName && (
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={startEditingName}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </Box>
+              
+              <Collapse in={nameSuccess}>
+                <Alert 
+                  severity="success"
+                  action={
+                    <IconButton
+                      aria-label="close"
+                      color="inherit"
+                      size="small"
+                      onClick={() => setNameSuccess(false)}
+                    >
+                      <CloseIcon fontSize="inherit" />
+                    </IconButton>
+                  }
+                  sx={{ mt: 2 }}
+                >
+                  Display name updated successfully!
+                </Alert>
+              </Collapse>
             </CardContent>
           </Card>
 
@@ -85,6 +252,103 @@ const ProfilePage: React.FC = () => {
             </CardContent>
           </Card>
         </Box>
+
+        <Divider sx={{ my: 3 }} />
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            Security
+          </Typography>
+          
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<LockIcon />}
+            onClick={togglePasswordForm}
+          >
+            {showPasswordForm ? 'Cancel' : 'Change Password'}
+          </Button>
+        </Box>
+        
+        <Collapse in={showPasswordForm}>
+          <Card variant="outlined" sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Change Password
+              </Typography>
+              
+              <Box component="form" onSubmit={handlePasswordChange} sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Current Password"
+                  type="password"
+                  required
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="New Password"
+                  type="password"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Confirm New Password"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  error={newPassword !== confirmPassword && confirmPassword !== ''}
+                  helperText={
+                    newPassword !== confirmPassword && confirmPassword !== ''
+                      ? "Passwords don't match"
+                      : ''
+                  }
+                />
+                
+                {passwordError && (
+                  <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                    {passwordError}
+                  </Alert>
+                )}
+                
+                {passwordSuccess && (
+                  <Alert 
+                    severity="success" 
+                    sx={{ mt: 2, mb: 2 }}
+                    action={
+                      <IconButton
+                        aria-label="close"
+                        color="inherit"
+                        size="small"
+                        onClick={() => setPasswordSuccess(false)}
+                      >
+                        <CloseIcon fontSize="inherit" />
+                      </IconButton>
+                    }
+                  >
+                    Password changed successfully!
+                  </Alert>
+                )}
+                
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                >
+                  Update Password
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Collapse>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
           <Button

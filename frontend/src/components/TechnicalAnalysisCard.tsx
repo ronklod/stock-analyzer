@@ -8,16 +8,13 @@ interface Props {
   sentimentAnalysis: SentimentAnalysis;
 }
 
-// Component for a chart section with fullscreen button
+// Component for a chart section
 interface ChartSectionProps {
   title: string;
-  onFullScreen: () => void;
   children: React.ReactNode;
 }
 
-const ChartSection: React.FC<ChartSectionProps> = ({ title, onFullScreen, children }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
+const ChartSection: React.FC<ChartSectionProps> = ({ title, children }) => {
   return (
     <div className="chart-section" style={{ marginBottom: '16px', position: 'relative' }}>
       <div style={{ 
@@ -27,30 +24,6 @@ const ChartSection: React.FC<ChartSectionProps> = ({ title, onFullScreen, childr
         marginBottom: '8px'
       }}>
         <h3 style={{ margin: 0, fontSize: '16px' }}>{title}</h3>
-        <button
-          onClick={onFullScreen}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onFocus={() => setIsHovered(true)}
-          onBlur={() => setIsHovered(false)}
-          aria-label={`Expand ${title} to fullscreen`}
-          style={{
-            background: 'none',
-            border: '1px solid #e5e7eb',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '12px',
-            color: '#6b7280',
-            transition: 'all 0.2s ease',
-            backgroundColor: isHovered ? '#f9fafb' : 'transparent',
-            boxShadow: isHovered ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-          }}
-        >
-          <span style={{ marginRight: '4px' }}>⛶</span> Expand
-        </button>
       </div>
       <div className="chart-content">
         {children}
@@ -403,14 +376,12 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
       
       <ChartSection 
         title="Technical Signals" 
-        onFullScreen={() => setFullScreenChart('technical')}
       >
         {createTechnicalSignalsSection()}
       </ChartSection>
 
       <ChartSection
         title="News Sentiment"
-        onFullScreen={() => setFullScreenChart('sentiment')}
       >
         {createSentimentSection()}  
       </ChartSection>
