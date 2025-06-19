@@ -21,6 +21,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-date-fns';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import processDemarkSignals from './DemarkIndicator';
+import FullScreenModal from './FullScreenModal';
 
 // Register all required components and controllers
 ChartJS.register(
@@ -102,6 +103,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   const [chartType, setChartType] = useState<ChartType>('candlestick');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('all');
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
+  const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
 
   const indicatorDescriptions: Record<string, string> = {
     'RSI': 'Relative Strength Index (RSI) measures momentum. Values above 70 indicate overbought conditions (potential price drop), while values below 30 indicate oversold conditions (potential price rise). The RSI helps identify potential reversal points.',
@@ -1123,12 +1125,66 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     },
   };
 
+  // CSS styles for chart components
+  const expandButtonStyle = {
+    background: 'none',
+    border: '1px solid #e5e7eb',
+    borderRadius: '4px',
+    padding: '4px 12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '12px',
+    color: '#6b7280',
+    transition: 'all 0.2s ease',
+  };
+
+  const expandButtonHoverStyle = {
+    ...expandButtonStyle,
+    backgroundColor: '#f9fafb',
+    borderColor: '#d1d5db',
+  };
+
+  // Function to render chart headers (without hooks)
+  const renderChartHeader = (title: string, chartId: string) => {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '8px'
+      }}>
+        <h3 style={{ 
+          fontSize: '16px', 
+          fontWeight: 600, 
+          margin: 0,
+          color: '#374151'
+        }}>{title}</h3>
+        
+        <button
+          onClick={() => setFullScreenChart(chartId)}
+          className="expand-button"
+          aria-label={`Expand ${title} to fullscreen`}
+          title={`View ${title} in fullscreen mode`}
+          style={expandButtonStyle}
+        >
+          <span style={{ marginRight: '4px' }}>⛶</span> Expand
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="charts-container">
       <style>
         {`
           .chart-container:active {
             cursor: grabbing !important;
+          }
+          .expand-button:hover, .expand-button:focus {
+            background-color: #f9fafb !important;
+            border-color: #d1d5db !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
           }
         `}
       </style>
@@ -1206,7 +1262,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           Double-click to reset
         </small>
       </div>
+      
       <div className="chart-wrapper">
+        {renderChartHeader(`${ticker} Stock Price`, 'price')}
         <div className="chart-container" 
           style={{ 
             height: '400px',
@@ -1228,7 +1286,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           />
         </div>
       </div>
+      
       <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
+        {renderChartHeader('Volume', 'volume')}
         <div className="chart-container" 
           style={{ 
             height: '200px',
@@ -1250,15 +1310,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           />
         </div>
       </div>
+      {/* RSI Chart */}
       {filteredData.indicators.rsi && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="RSI (Relative Strength Index)" indicator="RSI" />
-          <div className="chart-container" 
-            style={{ 
-              height: '200px',
-              ...chartContainerStyle,
-              cursor: 'grab',
-            }}>
+          {renderChartHeader('RSI (Relative Strength Index)', 'rsi')}
+          <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart 
               type='line' 
               data={rsiData} 
@@ -1275,26 +1331,32 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           </div>
         </div>
       )}
+      
+      {/* MACD Chart */}
       {(filteredData.indicators.macd || filteredData.indicators.macdSignal) && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="MACD (Moving Average Convergence Divergence)" indicator="MACD" />
-          <div className="chart-container" style={{ height: '200px' }}>
+          {renderChartHeader('MACD (Moving Average Convergence Divergence)', 'macd')}
+          <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='bar' data={macdData} options={macdOptions} />
           </div>
         </div>
       )}
+      
+      {/* CCI Chart */}
       {filteredData.indicators.cci && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="CCI (Commodity Channel Index)" indicator="CCI" />
-          <div className="chart-container" style={{ height: '200px' }}>
+          {renderChartHeader('CCI (Commodity Channel Index)', 'cci')}
+          <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='line' data={cciData} options={cciOptions} />
           </div>
         </div>
       )}
+      
+      {/* Bollinger Bands */}
       {filteredData.indicators.bbUpper && filteredData.indicators.bbLower && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="Bollinger Bands" indicator="Bollinger" />
-          <div className="chart-container" style={{ height: '300px' }}>
+          {renderChartHeader('Bollinger Bands', 'bollinger')}
+          <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='line' data={bollingerData} options={bollingerOptions} />
           </div>
         </div>
@@ -1303,8 +1365,37 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* Demark Indicator Chart */}
       {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="Demark Indicator" indicator="Demark" />
-          <div className="chart-container" style={{ height: '400px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '8px'
+          }}>
+            <h3 style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              margin: 0,
+              color: '#374151'
+            }}>Demark Indicator</h3>
+            
+            <button
+              onClick={() => setFullScreenChart('demark')}
+              style={{
+                background: 'none',
+                border: '1px solid #e5e7eb',
+                borderRadius: '4px',
+                padding: '4px 12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '12px',
+                color: '#6b7280',
+              }}
+            >
+              <span style={{ marginRight: '4px' }}>⛶</span> Expand
+            </button>
+          </div>
+          <div className="chart-container" style={{ height: '400px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart 
               type='candlestick'
               data={{
@@ -1392,13 +1483,215 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           </div>
         </div>
       )}
+      {/* Support & Resistance Levels */}
       {supportResistanceLevels.length > 0 && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <ChartHeader title="Support & Resistance Levels" indicator="Support & Resistance" />
-          <div className="chart-container" style={{ height: '300px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '8px'
+          }}>
+            <h3 style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              margin: 0,
+              color: '#374151'
+            }}>Support & Resistance Levels</h3>
+            
+            <button
+              onClick={() => setFullScreenChart('support-resistance')}
+              style={{
+                background: 'none',
+                border: '1px solid #e5e7eb',
+                borderRadius: '4px',
+                padding: '4px 12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '12px',
+                color: '#6b7280',
+              }}
+            >
+              <span style={{ marginRight: '4px' }}>⛶</span> Expand
+            </button>
+          </div>
+          <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='candlestick' data={supportResistanceData} options={supportResistanceOptions} />
           </div>
         </div>
+      )}
+
+      {/* Fullscreen Chart Components */}
+      <FullScreenModal 
+        isOpen={fullScreenChart === 'price'}
+        title={`${ticker} Stock Price (${chartType === 'line' ? 'Line' : 'Candlestick'})`}
+        onClose={() => setFullScreenChart(null)}
+      >
+        <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+          <Chart 
+            type={chartType === 'line' ? 'line' : 'candlestick' as any}
+            data={priceData}
+            options={{
+              ...priceOptions,
+              onHover: (event: any, elements: any) => {
+                const target = event.native?.target as HTMLElement;
+                if (target) {
+                  target.style.cursor = elements?.length ? 'pointer' : 'grab';
+                }
+              },
+            }}
+          />
+        </div>
+      </FullScreenModal>
+
+      <FullScreenModal 
+        isOpen={fullScreenChart === 'volume'}
+        title={`${ticker} Trading Volume`}
+        onClose={() => setFullScreenChart(null)}
+      >
+        <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+          <Chart 
+            type='bar'
+            data={volumeData}
+            options={volumeOptions}
+          />
+        </div>
+      </FullScreenModal>
+
+      {filteredData.indicators.rsi && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'rsi'}
+          title="RSI (Relative Strength Index)"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='line'
+              data={rsiData}
+              options={rsiOptions}
+            />
+          </div>
+        </FullScreenModal>
+      )}
+
+      {(filteredData.indicators.macd || filteredData.indicators.macdSignal) && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'macd'}
+          title="MACD (Moving Average Convergence Divergence)"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='bar'
+              data={macdData}
+              options={macdOptions}
+            />
+          </div>
+        </FullScreenModal>
+      )}
+
+      {filteredData.indicators.cci && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'cci'}
+          title="CCI (Commodity Channel Index)"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='line'
+              data={cciData}
+              options={cciOptions}
+            />
+          </div>
+        </FullScreenModal>
+      )}
+
+      {filteredData.indicators.bbUpper && filteredData.indicators.bbLower && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'bollinger'}
+          title="Bollinger Bands"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='line'
+              data={bollingerData}
+              options={bollingerOptions}
+            />
+          </div>
+        </FullScreenModal>
+      )}
+
+      {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || 
+        (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'demark'}
+          title="Demark Indicator"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='candlestick'
+              data={{
+                datasets: [
+                  {
+                    label: 'Price',
+                    data: candlestickData,
+                    type: 'candlestick' as const,
+                    candlestick: {
+                      color: {
+                        up: '#26a69a',
+                        down: '#ef5350',
+                        unchanged: '#999',
+                      },
+                    },
+                  } as any,
+                  demarkSignals.buyPoints.length > 0 ? {
+                    label: 'Demark Buy Signal',
+                    data: demarkSignals.buyPoints,
+                    backgroundColor: 'rgba(52, 211, 153, 1)',
+                    borderColor: 'rgba(52, 211, 153, 1)',
+                    pointStyle: 'triangle',
+                    pointRadius: 10,
+                    pointHoverRadius: 15,
+                    showLine: false,
+                    type: 'scatter' as const,
+                  } : null,
+                  demarkSignals.sellPoints.length > 0 ? {
+                    label: 'Demark Sell Signal',
+                    data: demarkSignals.sellPoints,
+                    backgroundColor: 'rgba(239, 68, 68, 1)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    pointStyle: 'triangle',
+                    rotation: 180,
+                    pointRadius: 10,
+                    pointHoverRadius: 15,
+                    showLine: false,
+                    type: 'scatter' as const,
+                  } : null,
+                ].filter(Boolean) as any[],
+              }}
+              options={demarkChartOptions}
+            />
+          </div>
+        </FullScreenModal>
+      )}
+
+      {supportResistanceLevels.length > 0 && (
+        <FullScreenModal 
+          isOpen={fullScreenChart === 'support-resistance'}
+          title="Support & Resistance Levels"
+          onClose={() => setFullScreenChart(null)}
+        >
+          <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
+            <Chart 
+              type='candlestick'
+              data={supportResistanceData}
+              options={supportResistanceOptions}
+            />
+          </div>
+        </FullScreenModal>
       )}
     </div>
   );
