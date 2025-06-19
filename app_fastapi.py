@@ -21,7 +21,7 @@ from stock_analysis.nasdaq100_analyzer import NASDAQ100Screener
 from stock_analysis.sp500_analyzer import SP500Screener
 from stock_analysis.mag7_analyzer import MAG7Screener
 from database.database import get_db, engine
-from database import WatchlistItem, User, Base
+from database import WatchlistItem, User, Base, pwd_context
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import logging
@@ -34,7 +34,8 @@ from authlib.integrations.requests_client import OAuth2Session
 from auth import (
     authenticate_user, create_access_token, get_current_user, UserCreate, 
     Token, UserResponse, create_user, get_user, create_or_update_google_user,
-    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, ACCESS_TOKEN_EXPIRE_MINUTES
+    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, ACCESS_TOKEN_EXPIRE_MINUTES,
+    get_password_hash, verify_password
 )
 
 # Configure logging
@@ -100,10 +101,7 @@ class TechnicalAnalysis(BaseModel):
 class NewsArticle(BaseModel):
     title: str
     url: str
-    source: str
     sentiment: float
-    date: str
-    summary: str
 
 class SentimentAnalysis(BaseModel):
     score: float
@@ -887,15 +885,65 @@ async def remove_from_user_watchlist(
     db.commit()
     return {"message": "Item deleted successfully"}
 
+# Change password endpoint
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class UpdateUserProfileRequest(BaseModel):
+    display_name: str
+
+@app.post("/api/auth/change-password")
+async def change_password(
+    request: ChangePasswordRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Change user password"""
+    try:
+        # Verify current password
+        user = db.query(User).filter(User.id == current_user.id).first()
+        if not user or not verify_password(request.current_password, user.hashed_password):
+            raise HTTPException(status_code=400, detail="Invalid current password")
+        
+        # Update password
+        user.hashed_password = get_password_hash(request.new_password)
+        db.commit()
+        
+        return {"message": "Password changed successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/auth/update-profile")
+async def update_user_profile(
+    request: UpdateUserProfileRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user profile information"""
+    try:
+        # Get the user and update fields
+        user = db.query(User).filter(User.id == current_user.id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Update display name
+        user.display_name = request.display_name
+        db.commit()
+        
+        return {"message": "Profile updated successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
 # Mount static files for React app if the build directory exists
 if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_DIR, "static")), name="static")
     
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa_paths(full_path: str):
-        """Serve the React SPA for all non-API paths"""
-        if full_path.startswith("api/"):
-            raise HTTPException(status_code=404, detail="API path not found")
+        """Serve the SPA index.html for any unmatched routes"""
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 else:
     logger.warning(f"Frontend build directory not found: {FRONTEND_DIR}")
