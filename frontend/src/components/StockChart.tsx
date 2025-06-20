@@ -123,6 +123,12 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     bollingerColor: theme === 'dark' ? '#a78bfa' : '#7c3aed', // Brighter purple for Bollinger
     labelBackgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.85)',
   };
+  
+  // Special theme for fullscreen charts - always use dark text for readability on white background
+  const fullscreenChartTheme = {
+    ...chartTheme,
+    textColor: '#374151', // Always dark text in fullscreen mode
+  };
 
   const indicatorDescriptions: Record<string, string> = {
     'RSI': 'Relative Strength Index (RSI) measures momentum. Values above 70 indicate overbought conditions (potential price drop), while values below 30 indicate oversold conditions (potential price rise). The RSI helps identify potential reversal points.',
@@ -1685,6 +1691,45 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             data={priceData}
             options={{
               ...priceOptions,
+              plugins: {
+                ...priceOptions.plugins,
+                title: {
+                  ...priceOptions.plugins?.title,
+                  color: '#374151', // Always dark text in fullscreen
+                },
+                legend: {
+                  ...priceOptions.plugins?.legend,
+                  labels: {
+                    ...priceOptions.plugins?.legend?.labels,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                }
+              },
+              scales: {
+                ...priceOptions.scales,
+                x: {
+                  ...priceOptions.scales?.x,
+                  ticks: {
+                    ...priceOptions.scales?.x?.ticks,
+                    color: '#374151', // Always dark text in fullscreen
+                  },
+                  title: {
+                    ...priceOptions.scales?.x?.title,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                },
+                y: {
+                  ...priceOptions.scales?.y,
+                  ticks: {
+                    ...priceOptions.scales?.y?.ticks,
+                    color: '#374151', // Always dark text in fullscreen
+                  },
+                  title: {
+                    ...priceOptions.scales?.y?.title,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                }
+              },
               onHover: (event: any, elements: any) => {
                 const target = event.native?.target as HTMLElement;
                 if (target) {
@@ -1705,7 +1750,44 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           <Chart 
             type='bar'
             data={volumeData}
-            options={volumeOptions}
+            options={{
+              ...volumeOptions,
+              plugins: {
+                ...volumeOptions.plugins,
+                title: {
+                  ...volumeOptions.plugins?.title,
+                  color: '#374151', // Always dark text in fullscreen
+                },
+                legend: {
+                  ...volumeOptions.plugins?.legend,
+                  labels: {
+                    ...volumeOptions.plugins?.legend?.labels,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                }
+              },
+              scales: {
+                ...volumeOptions.scales,
+                x: {
+                  ...volumeOptions.scales?.x,
+                  ticks: {
+                    ...volumeOptions.scales?.x?.ticks,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                },
+                y: {
+                  ...volumeOptions.scales?.y,
+                  ticks: {
+                    ...volumeOptions.scales?.y?.ticks,
+                    color: '#374151', // Always dark text in fullscreen
+                  },
+                  title: {
+                    ...volumeOptions.scales?.y?.title,
+                    color: '#374151', // Always dark text in fullscreen
+                  }
+                }
+              }
+            }}
           />
         </div>
       </FullScreenModal>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { setupFocusTrap } from '../utils/focusTrap';
+import { useTheme } from '../context/ThemeContext';
 
 interface FullScreenModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({ isOpen, title, onClos
   const modalRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const { theme } = useTheme();
   
   // Reset closing state when modal opens
   useEffect(() => {
@@ -78,11 +80,12 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({ isOpen, title, onClos
         left: 0,
         width: '100vw',
         height: '100vh',
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backgroundColor: 'rgba(255, 255, 255, 0.98)', // Always white background
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
         paddingTop: '20px',
+        color: '#374151', // Always dark text for readability
       }}
     >
       <div style={{
@@ -93,7 +96,7 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({ isOpen, title, onClos
         borderBottom: '1px solid #eaeaea',
         marginBottom: '20px',
       }}>
-        <h2 style={{ margin: 0 }}>{title}</h2>
+        <h2 style={{ margin: 0, color: '#1f2937' }}>{title}</h2>
         <button 
           onClick={handleClose}
           aria-label="Close modal"
