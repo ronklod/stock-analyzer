@@ -37,7 +37,7 @@ data/
 
 # Distribution / packaging
 dist/
-#build/
+build/
 *.egg-info/
 
 # Node.js
