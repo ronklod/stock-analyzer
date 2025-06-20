@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useSearchParams } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material'; // Import useMediaQuery for responsive design
 import './App.css';
 import CompanyInfoCard from './components/CompanyInfoCard';
 import RecommendationCard from './components/RecommendationCard';
@@ -28,8 +29,9 @@ function StockAnalyzer() {
   const [ticker, setTicker] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [analysisData, setAnalysisData] = useState<StockAnalysisResponse | null>(null);
+  const [stockData, setStockData] = useState<StockAnalysisResponse | null>(null);
   const api = useApi();
+  const isMobile = useMediaQuery('(max-width:768px)'); // Add responsive hook
 
   // Check for ticker in URL params on mount
   useEffect(() => {
@@ -50,11 +52,11 @@ function StockAnalyzer() {
 
     setLoading(true);
     setError(null);
-    setAnalysisData(null);
+    setStockData(null);
 
     try {
       const data = await api.analyzeStock(symbolToAnalyze.toUpperCase());
-      setAnalysisData(data);
+      setStockData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -66,7 +68,7 @@ function StockAnalyzer() {
     <div className="App"> 
       <main className="App-main">
         <section className="search-section">
-          <div className="search-container">
+          <div className={`search-container ${isMobile ? 'mobile-stack' : ''}`}>
             <input
               type="text"
               className="ticker-input"
@@ -75,11 +77,13 @@ function StockAnalyzer() {
               onChange={(e) => setTicker(e.target.value.toUpperCase())}
               onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
               disabled={loading}
+              style={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
             />
             <button 
               className="analyze-button"
               onClick={() => handleAnalyze()}
               disabled={loading || !ticker.trim()}
+              style={{ fontSize: isMobile ? '0.9rem' : '1rem' }}
             >
               {loading ? 'Analyzing...' : 'Analyze Stock'}
             </button>
@@ -94,39 +98,43 @@ function StockAnalyzer() {
           </div>
         )}
 
-        {analysisData && (
+        {stockData && (
           <section className="results-section">
-            <div className="results-header">
-              <h2>{analysisData.ticker} Analysis Results</h2>
-              <WatchlistButton 
-                symbol={analysisData.ticker} 
-                companyName={analysisData.companyInfo.name} 
-              />
+            <div className={`results-header ${isMobile ? 'mobile-stack' : ''}`} style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }}>
+              <h2>{stockData.companyInfo.name} ({stockData.ticker})</h2>
+              <WatchlistButton symbol={stockData.ticker} companyName={stockData.companyInfo.name} />
             </div>
-            <div className="results-grid">
-              <CompanyInfoCard companyInfo={analysisData.companyInfo} ticker={analysisData.ticker} />
-              <RecommendationCard recommendation={analysisData.recommendation} />
-              <TechnicalAnalysisCard 
-                technicalAnalysis={analysisData.technicalAnalysis}
-                sentimentAnalysis={analysisData.sentimentAnalysis}
-              />
+            
+            <div className="results-grid" style={{ 
+              gap: isMobile ? '0.75rem' : '2rem',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr'
+            }}>
+              {/* Top three main cards in special container for desktop layout */}
+              <div className="top-cards-container">
+                <CompanyInfoCard companyInfo={stockData.companyInfo} ticker={stockData.ticker} />
+                <RecommendationCard recommendation={stockData.recommendation} />
+                <TechnicalAnalysisCard 
+                  technicalAnalysis={stockData.technicalAnalysis}
+                  sentimentAnalysis={stockData.sentimentAnalysis}
+                />
+              </div>
               <PriceTargetsCard 
                 priceTargets={{
-                  currentPrice: analysisData.priceTargets.current_price,
-                  stopLoss: analysisData.priceTargets.stop_loss,
-                  target1: analysisData.priceTargets.target_1,
-                  target2: analysisData.priceTargets.target_2,
-                  riskRewardRatio: analysisData.priceTargets.risk_reward,
+                  currentPrice: stockData.priceTargets.current_price,
+                  stopLoss: stockData.priceTargets.stop_loss,
+                  target1: stockData.priceTargets.target_1,
+                  target2: stockData.priceTargets.target_2,
+                  riskRewardRatio: stockData.priceTargets.risk_reward,
                 }}
-                supportResistanceLevels={analysisData.supportResistanceLevels}
+                supportResistanceLevels={stockData.supportResistanceLevels}
               />
             </div>
             
             <div className="chart-section">
               <StockChart 
-                chartData={analysisData.chartData}
-                ticker={analysisData.ticker}
-                supportResistanceLevels={analysisData.supportResistanceLevels}
+                chartData={stockData.chartData}
+                ticker={stockData.ticker}
+                supportResistanceLevels={stockData.supportResistanceLevels}
               />
             </div>
           </section>

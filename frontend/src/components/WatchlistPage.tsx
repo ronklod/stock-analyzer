@@ -93,12 +93,12 @@ const WatchlistPage: React.FC = () => {
                 </Paper>
             ) : (
                 <TableContainer component={Paper}>
-                    <Table>
+                    <Table size="small">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Symbol</TableCell>
-                                <TableCell>Company Name</TableCell>
-                                <TableCell>Added Date</TableCell>
+                                <TableCell className="desktop-only">Company Name</TableCell>
+                                <TableCell className="desktop-only">Added Date</TableCell>
                                 <TableCell>Notes</TableCell>
                                 <TableCell align="right">Actions</TableCell>
                             </TableRow>
@@ -111,8 +111,8 @@ const WatchlistPage: React.FC = () => {
                                             {item.symbol}
                                         </Link>
                                     </TableCell>
-                                    <TableCell>{item.company_name}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="desktop-only">{item.company_name}</TableCell>
+                                    <TableCell className="desktop-only">
                                         {new Date(item.added_date).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell>
@@ -145,4 +145,4 @@ const WatchlistPage: React.FC = () => {
     );
 };
 
-export default WatchlistPage; 
+export default WatchlistPage;

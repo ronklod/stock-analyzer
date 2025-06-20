@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Recommendation } from '../types';
+import { useMediaQuery } from '@mui/material';
 
 interface Props {
   recommendation: Recommendation;
@@ -7,6 +8,7 @@ interface Props {
 
 const RecommendationCard: React.FC<Props> = ({ recommendation }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const isMobile = useMediaQuery('(max-width:768px)');
 
   const getRecommendationClass = (rec: string) => {
     return rec.replace(/\s+/g, ' ');
@@ -30,9 +32,9 @@ Recommendation thresholds:
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">📊 Recommendation</h2>
+        <h2 className="card-title" style={{ fontSize: isMobile ? '1rem' : '1.3rem' }}>📊 Recommendation</h2>
       </div>
-      <div className="recommendation-content">
+      <div className="recommendation-content" style={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
         <div className={`recommendation-badge ${getRecommendationClass(recommendation.recommendation)}`}>
           {recommendation.recommendation}
         </div>

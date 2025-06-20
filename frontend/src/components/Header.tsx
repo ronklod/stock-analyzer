@@ -67,25 +67,28 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar position="static" color="primary" elevation={3}>
-      <Toolbar>
-        <TrendingUpIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-        <Typography
-          variant="h6"
-          noWrap
-          component={RouterLink}
-          to="/"
-          sx={{
-            mr: 2,
-            display: 'flex',
-            fontWeight: 700,
-            color: 'inherit',
-            textDecoration: 'none',
-            flexGrow: { xs: 1, md: 0 }
-          }}
-        >
-          Stock Analyzer
-        </Typography>
+    <AppBar position="static" sx={{ 
+      backgroundColor: theme === 'dark' ? '#1a1a2e' : '#2c3e50',
+      boxShadow: 3
+    }}>
+      <Toolbar sx={{ 
+        justifyContent: 'space-between',
+        flexWrap: 'wrap', // Allow wrapping on very small screens
+        padding: isMobile ? '0.5rem' : '0.5rem 1rem' // Reduce padding on mobile
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <TrendingUpIcon sx={{ fontSize: isMobile ? 28 : 32, mr: 1 }} />
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            component="div" 
+            sx={{ 
+              fontWeight: 'bold',
+              fontSize: isMobile ? '1.1rem' : '1.5rem'
+            }}
+          >
+            Stock Analyzer
+          </Typography>
+        </Box>
         
         {/* Mobile menu button */}
         {isMobile && (
@@ -231,54 +234,62 @@ const Header: React.FC = () => {
           {theme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
         
-        {/* Mobile Menu */}
+        {/* Mobile menu */}
         <Menu
-          id="menu-appbar"
+          id="mobile-menu"
           anchorEl={mobileMenuAnchor}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'right',
+            horizontal: 'left',
           }}
           keepMounted
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
           open={Boolean(mobileMenuAnchor)}
           onClose={handleCloseMobileMenu}
+          sx={{ 
+            '& .MuiPaper-root': { 
+              width: '100%', 
+              maxWidth: '300px',
+              mt: 1.5 
+            } 
+          }}
         >
           <MenuItem 
-            onClick={handleCloseMobileMenu}
-            component={RouterLink}
+            onClick={handleCloseMobileMenu} 
+            component={RouterLink} 
             to="/"
+            sx={{ py: 1.5 }} // Larger touch target area
           >
             Analyzer
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseMobileMenu}
-            component={RouterLink}
+            onClick={handleCloseMobileMenu} 
+            component={RouterLink} 
             to="/screener/nasdaq100"
+            sx={{ py: 1.5 }}
           >
             NASDAQ-100 Screener
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseMobileMenu}
-            component={RouterLink}
+            onClick={handleCloseMobileMenu} 
+            component={RouterLink} 
             to="/screener/sp500"
+            sx={{ py: 1.5 }}
           >
             S&P 500 Screener
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseMobileMenu}
-            component={RouterLink}
+            onClick={handleCloseMobileMenu} 
+            component={RouterLink} 
             to="/screener/mag7"
+            sx={{ py: 1.5 }}
           >
             MAG7 Screener
           </MenuItem>
           <MenuItem 
-            onClick={handleCloseMobileMenu}
-            component={RouterLink}
+            onClick={handleCloseMobileMenu} 
+            component={RouterLink} 
             to="/watchlist"
+            sx={{ py: 1.5 }}
           >
             Watchlist
           </MenuItem>
@@ -290,6 +301,7 @@ const Header: React.FC = () => {
                 onClick={handleCloseMobileMenu}
                 component={RouterLink}
                 to="/profile"
+                sx={{ py: 1.5 }}
               >
                 Profile
               </MenuItem>,
@@ -299,6 +311,7 @@ const Header: React.FC = () => {
                   handleCloseMobileMenu();
                   logout();
                 }}
+                sx={{ py: 1.5 }}
               >
                 Logout
               </MenuItem>,
@@ -308,6 +321,7 @@ const Header: React.FC = () => {
                   toggleTheme();
                   handleCloseMobileMenu();
                 }}
+                sx={{ py: 1.5 }}
               >
                 {theme === 'dark' ? 
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -328,6 +342,7 @@ const Header: React.FC = () => {
                 onClick={handleCloseMobileMenu}
                 component={RouterLink}
                 to="/login"
+                sx={{ py: 1.5 }}
               >
                 Login
               </MenuItem>,
@@ -336,6 +351,7 @@ const Header: React.FC = () => {
                 onClick={handleCloseMobileMenu}
                 component={RouterLink}
                 to="/register"
+                sx={{ py: 1.5 }}
               >
                 Sign Up
               </MenuItem>

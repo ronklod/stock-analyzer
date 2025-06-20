@@ -1,0 +1,51 @@
+/* Additional responsive settings for the CollapsibleExplanation component */
+.collapsible-explanation button:hover {
+  background-color: #e5e5e5;
+}
+
+.collapsible-explanation button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Make sure all charts are fully responsive on mobile */
+@media (max-width: 768px) {
+  .chart-container {
+    touch-action: pan-y;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improve touch targets for buttons */
+  button {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+  }
+  
+  /* Ensure price targets are always visible */
+  #price-targets-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Proper spacing in card layouts */
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Make sure images don't overflow */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Fix for the top three cards on desktop layout */
+@media (min-width: 769px) {
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}

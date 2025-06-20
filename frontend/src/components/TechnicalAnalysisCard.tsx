@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TechnicalAnalysis, SentimentAnalysis } from '../types';
 import { format } from 'date-fns';
 import FullScreenModal from './FullScreenModal';
+import { useMediaQuery } from '@mui/material';
 
 interface Props {
   technicalAnalysis: TechnicalAnalysis;
@@ -33,6 +34,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({ title, children }) => {
 };
 
 const TechnicalAnalysisCard: React.FC<Props> = ({ technicalAnalysis, sentimentAnalysis }) => {
+  const isMobile = useMediaQuery('(max-width:768px)');
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
   const [showSentimentInfo, setShowSentimentInfo] = useState(false);
   const [showNewsImpact, setShowNewsImpact] = useState(false);
@@ -371,20 +373,21 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">📈 Technical Analysis</h2>
+        <h2 className="card-title" style={{ fontSize: isMobile ? '1rem' : '1.3rem' }}>📈 Technical Analysis</h2>
       </div>
-      
-      <ChartSection 
-        title="Technical Signals" 
-      >
-        {createTechnicalSignalsSection()}
-      </ChartSection>
+      <div className="technical-content" style={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
+        <ChartSection 
+          title="Technical Signals" 
+        >
+          {createTechnicalSignalsSection()}
+        </ChartSection>
 
-      <ChartSection
-        title="News Sentiment"
-      >
-        {createSentimentSection()}  
-      </ChartSection>
+        <ChartSection
+          title="News Sentiment"
+        >
+          {createSentimentSection()}  
+        </ChartSection>
+      </div>
 
       {/* Full screen modals */}
       <FullScreenModal

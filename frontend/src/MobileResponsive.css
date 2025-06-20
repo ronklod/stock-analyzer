@@ -1,0 +1,114 @@
+/* Mobile Responsiveness Enhancement */
+
+/* Table Responsive Styling */
+@media (max-width: 768px) {
+  /* Make tables responsive */
+  .MuiTableContainer-root {
+    overflow-x: auto;
+  }
+  
+  /* Reduce padding in table cells */
+  .MuiTableCell-root {
+    padding: 8px 6px;
+  }
+  
+  /* Adjust font sizes in tables */
+  .MuiTableCell-root {
+    font-size: 0.875rem;
+  }
+  
+  /* Reduce button sizes in mobile view */
+  .MuiButton-root {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+  }
+  
+  /* Adjust form controls in mobile view */
+  .MuiFormControl-root {
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  /* Adjust charts for mobile */
+  .recharts-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Improve touch targets */
+  .MuiIconButton-root {
+    padding: 10px;
+  }
+  
+  /* Adjust modal content on mobile */
+  .MuiDialog-paper {
+    margin: 12px;
+    width: calc(100% - 24px);
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  /* Further reduce paddings */
+  .MuiTableCell-root {
+    padding: 6px 4px;
+  }
+  
+  /* Even smaller font for very small screens */
+  .MuiTableCell-root {
+    font-size: 0.8125rem;
+  }
+  
+  /* Stack buttons in forms */
+  .form-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Ensure forms adapt to small screens */
+  .MuiTextField-root {
+    width: 100%;
+  }
+}
+
+/* Utility classes for responsive layouts */
+.mobile-full-width {
+  width: 100%;
+}
+
+.mobile-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-hidden {
+  display: none;
+}
+
+.mobile-visible {
+  display: block;
+}
+
+/* Spacing utility classes */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-5 { margin-top: 1.5rem; }
+.mt-6 { margin-top: 2rem; }
+
+/* Apply these classes conditionally in mobile views */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block !important;
+  }
+  
+  .mobile-stack-md {
+    display: flex;
+    flex-direction: column;
+  }
+}

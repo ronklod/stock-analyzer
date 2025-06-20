@@ -23,6 +23,7 @@ import { CandlestickController, CandlestickElement, OhlcController, OhlcElement 
 import processDemarkSignals from './DemarkIndicator';
 import FullScreenModal from './FullScreenModal';
 import { useTheme } from '../context/ThemeContext';
+import { useMediaQuery } from '@mui/material'; // Import for responsive detection
 
 // Register all required components and controllers
 ChartJS.register(
@@ -103,6 +104,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
   const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
   const { theme } = useTheme();  // Get current theme
+  const isMobile = useMediaQuery('(max-width:768px)'); // Add responsive detection
   
   // Define theme-based chart colors
   const chartTheme = {
@@ -1339,6 +1341,89 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     );
   };
 
+  // Responsive options generator
+  const generateResponsiveOptions = (baseOptions: any) => {
+    // Add responsive options based on device size
+    if (isMobile) {
+      return {
+        ...baseOptions,
+        plugins: {
+          ...baseOptions.plugins,
+          legend: {
+            ...baseOptions.plugins?.legend,
+            labels: {
+              ...baseOptions.plugins?.legend?.labels,
+              boxWidth: 8,
+              font: {
+                size: 10
+              },
+              padding: 8
+            },
+            position: 'bottom' as const
+          },
+          title: {
+            ...baseOptions.plugins?.title,
+            font: {
+              ...baseOptions.plugins?.title?.font,
+              size: 11
+            },
+            padding: 4
+          },
+          tooltip: {
+            ...baseOptions.plugins?.tooltip,
+            bodyFont: {
+              size: 10
+            },
+            titleFont: {
+              size: 10
+            },
+            boxPadding: 3
+          }
+        },
+        scales: {
+          ...baseOptions.scales,
+          x: {
+            ...baseOptions.scales?.x,
+            ticks: {
+              ...baseOptions.scales?.x?.ticks,
+              font: {
+                size: 9
+              },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6
+            }
+          },
+          y: {
+            ...baseOptions.scales?.y,
+            ticks: {
+              ...baseOptions.scales?.y?.ticks,
+              font: {
+                size: 9
+              },
+              padding: 2
+            }
+          }
+        },
+        // Make chart touch-friendly
+        interaction: {
+          mode: 'nearest' as const,
+          axis: 'xy' as const,
+          intersect: false
+        }
+      };
+    }
+    return baseOptions;
+  };
+  
+  // Apply responsive options to all chart options
+  const responsivePriceOptions = generateResponsiveOptions(priceOptions);
+  const responsiveVolumeOptions = generateResponsiveOptions(volumeOptions);
+  const responsiveRsiOptions = generateResponsiveOptions(rsiOptions);
+  const responsiveMacdOptions = generateResponsiveOptions(macdOptions);
+  const responsiveCciOptions = generateResponsiveOptions(cciOptions);
+  const responsiveBolingerOptions = generateResponsiveOptions(bollingerOptions);
+
   return (
     <div className="charts-container">
       <style>
@@ -1351,14 +1436,29 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             border-color: #d1d5db !important;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
           }
+          .chart-type-button, .time-interval-button {
+            padding: ${isMobile ? '8px 12px' : '6px 10px'};
+            font-size: ${isMobile ? '0.875rem' : '0.8125rem'};
+            min-width: ${isMobile ? '40px' : '36px'};
+            touch-action: manipulation;
+          }
+          @media (max-width: 480px) {
+            .time-interval-button {
+              padding: 8px 6px;
+              font-size: 0.75rem;
+              min-width: 30px;
+            }
+          }
         `}
       </style>
       <div className="chart-controls" style={{
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: isMobile ? 'stretch' : 'center',
+        gap: isMobile ? '0.75rem' : '0',
         marginBottom: '1rem',
-        padding: '0.5rem',
+        padding: isMobile ? '0.75rem' : '0.5rem',
         backgroundColor: '#f8f9fa',
         borderRadius: '8px',
       }}>
@@ -1367,7 +1467,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           gap: '0.5rem',
           padding: '0.25rem',
           backgroundColor: '#e3f2fd',
-          borderRadius: '6px',
+          borderRadius: '4px',
+          width: isMobile ? '100%' : 'auto',
+          justifyContent: isMobile ? 'center' : 'flex-start',
         }}>
           <button 
             className={`chart-type-button ${chartType === 'line' ? 'active' : ''}`}
@@ -1387,7 +1489,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           gap: '0.5rem',
           padding: '0.25rem',
           backgroundColor: '#e3f2fd',
-          borderRadius: '6px',
+          borderRadius: '4px',
+          width: isMobile ? '100%' : 'auto',
+          justifyContent: isMobile ? 'center' : 'flex-start',
         }}>
           <button 
             className={`time-interval-button ${timeInterval === '1d' ? 'active' : ''}`}
@@ -1422,19 +1526,19 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </div>
       </div>
       
-      <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
+      <div className="chart-wrapper" style={{ marginTop: isMobile ? '1rem' : '2rem' }}>
         {renderChartHeader(`${ticker} - Stock Price`, 'price')}
         <div className="chart-container" 
-          style={{ 
-            height: '400px',
+          style={{
+            height: isMobile ? '350px' : '500px',
             ...chartContainerStyle,
-            cursor: 'grab',
+            cursor: 'grab'
           }}>
           <Chart 
             type={chartType === 'line' ? 'line' : 'candlestick' as any} 
             data={priceData} 
             options={{
-              ...priceOptions,
+              ...responsivePriceOptions,
               onHover: (event: any, elements: any) => {
                 const target = event.native?.target as HTMLElement;
                 if (target) {
@@ -1446,26 +1550,18 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </div>
       </div>
       
-      <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
+      <div className="chart-wrapper" style={{ marginTop: isMobile ? '1rem' : '2rem' }}>
         {renderChartHeader(`${ticker} - Volume`, 'volume')}
         <div className="chart-container" 
           style={{ 
-            height: '200px',
+            height: isMobile ? '180px' : '200px',
             ...chartContainerStyle,
-            cursor: 'grab',
+            cursor: 'grab'
           }}>
           <Chart 
             type='bar' 
             data={volumeData} 
-            options={{
-              ...volumeOptions,
-              onHover: (event: any, elements: any) => {
-                const target = event.native?.target as HTMLElement;
-                if (target) {
-                  target.style.cursor = elements?.length ? 'pointer' : 'grab';
-                }
-              },
-            }} 
+            options={responsiveVolumeOptions} 
           />
         </div>
       </div>
@@ -1496,7 +1592,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - MACD (Moving Average Convergence Divergence)`, 'macd')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='bar' data={macdData} options={macdOptions} />
+            <Chart type='bar' data={macdData} options={responsiveMacdOptions} />
           </div>
         </div>
       )}
@@ -1506,7 +1602,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - CCI (Commodity Channel Index)`, 'cci')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='line' data={cciData} options={cciOptions} />
+            <Chart type='line' data={cciData} options={responsiveCciOptions} />
           </div>
         </div>
       )}
@@ -1516,7 +1612,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - Bollinger Bands`, 'bollinger')}
           <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='line' data={bollingerData} options={bollingerOptions} />
+            <Chart type='line' data={bollingerData} options={responsiveBolingerOptions} />
           </div>
         </div>
       )}
