@@ -21,7 +21,7 @@ from stock_analysis.nasdaq100_analyzer import NASDAQ100Screener
 from stock_analysis.sp500_analyzer import SP500Screener
 from stock_analysis.mag7_analyzer import MAG7Screener
 from database.database import get_db, engine
-from database import WatchlistItem, User, Base, pwd_context
+from database import WatchlistItem, User, UserPreference, Base, pwd_context
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import logging
@@ -191,6 +191,13 @@ class WatchlistItemResponse(BaseModel):
     company_name: str
     added_date: datetime
     notes: Optional[str]
+
+# User preference models
+class UserPreferenceUpdate(BaseModel):
+    theme: Optional[str] = None  # 'light' or 'dark'
+
+class UserPreferenceResponse(BaseModel):
+    theme: str
 
 @app.post("/api/analyze", response_model=StockAnalysisResponse)
 async def analyze_stock(request: StockRequest, current_user: User = Depends(get_current_user)):
@@ -884,6 +891,52 @@ async def remove_from_user_watchlist(
     db.delete(item)
     db.commit()
     return {"message": "Item deleted successfully"}
+
+# User preference endpoints
+@app.get("/api/user/preferences", response_model=UserPreferenceResponse)
+async def get_user_preferences(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user preferences for the current user"""
+    # Get user preferences or create if they don't exist
+    preferences = db.query(UserPreference).filter(UserPreference.user_id == current_user.id).first()
+    
+    if not preferences:
+        # Create default preferences
+        preferences = UserPreference(user_id=current_user.id, theme="light")
+        db.add(preferences)
+        db.commit()
+        db.refresh(preferences)
+    
+    return {"theme": preferences.theme}
+
+@app.post("/api/user/preferences", response_model=UserPreferenceResponse)
+async def update_user_preferences(
+    preference_update: UserPreferenceUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user preferences for the current user"""
+    # Get user preferences or create if they don't exist
+    preferences = db.query(UserPreference).filter(UserPreference.user_id == current_user.id).first()
+    
+    if not preferences:
+        # Create new preferences
+        preferences = UserPreference(
+            user_id=current_user.id,
+            theme=preference_update.theme if preference_update.theme else "light"
+        )
+        db.add(preferences)
+    else:
+        # Update existing preferences
+        if preference_update.theme is not None:
+            preferences.theme = preference_update.theme
+    
+    db.commit()
+    db.refresh(preferences)
+    
+    return {"theme": preferences.theme}
 
 # Change password endpoint
 class ChangePasswordRequest(BaseModel):

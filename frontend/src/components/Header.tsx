@@ -10,7 +10,7 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  useTheme,
+  useTheme as useMuiTheme,
   useMediaQuery,
   Popper,
   Grow,
@@ -22,12 +22,16 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { theme, toggleTheme } = useTheme();
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -217,6 +221,16 @@ const Header: React.FC = () => {
           )}
         </Box>
         
+        {/* Theme toggle button */}
+        <IconButton 
+          onClick={toggleTheme}
+          color="inherit"
+          sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}
+          aria-label="toggle theme"
+        >
+          {theme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
+        
         {/* Mobile Menu */}
         <Menu
           id="menu-appbar"
@@ -287,6 +301,24 @@ const Header: React.FC = () => {
                 }}
               >
                 Logout
+              </MenuItem>,
+              <MenuItem 
+                key="theme" 
+                onClick={() => {
+                  toggleTheme();
+                  handleCloseMobileMenu();
+                }}
+              >
+                {theme === 'dark' ? 
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LightModeIcon fontSize="small" sx={{ mr: 1 }} />
+                    Light Mode
+                  </Box> : 
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <DarkModeIcon fontSize="small" sx={{ mr: 1 }} />
+                    Dark Mode
+                  </Box>
+                }
               </MenuItem>
             ]
           ) : (

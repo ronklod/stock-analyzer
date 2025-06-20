@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   Container,
   Paper,
@@ -14,16 +15,24 @@ import {
   TextField,
   Alert,
   Collapse,
-  IconButton
+  IconButton,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import './Auth.css';
 
 const ProfilePage: React.FC = () => {
   const { user, logout, isAuthenticated, changePassword, updateProfile } = useAuth();
+  const { theme, setThemeMode } = useTheme();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -127,6 +136,10 @@ const ProfilePage: React.FC = () => {
         setNameError('Failed to update display name');
       }
     }
+  };
+
+  const handleThemeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setThemeMode(event.target.value as 'light' | 'dark');
   };
 
   return (
@@ -349,6 +362,63 @@ const ProfilePage: React.FC = () => {
             </CardContent>
           </Card>
         </Collapse>
+
+        <Divider sx={{ my: 3 }} />
+        
+        <Typography variant="h6" gutterBottom>
+          Appearance
+        </Typography>
+        
+        <Box sx={{ mt: 2 }}>
+          <Card variant="outlined" sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Theme Mode
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <FormControl component="fieldset" sx={{ mt: 2 }}>
+                <RadioGroup
+                  aria-label="theme"
+                  name="theme-group"
+                  value={theme}
+                  onChange={(e) => setThemeMode(e.target.value as 'light' | 'dark')}
+                  row
+                >
+                  <FormControlLabel 
+                    value="light" 
+                    control={<Radio />} 
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <LightModeIcon sx={{ mr: 1 }} />
+                        Light Mode
+                      </Box>
+                    }
+                  />
+                  <FormControlLabel 
+                    value="dark" 
+                    control={<Radio />} 
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <DarkModeIcon sx={{ mr: 1 }} />
+                        Dark Mode
+                      </Box>
+                    }
+                  />
+                </RadioGroup>
+              </FormControl>
+              
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Choose your preferred appearance. This will change the look of the entire application.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
           <Button

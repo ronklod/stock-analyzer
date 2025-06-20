@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,6 +22,7 @@ import 'chartjs-adapter-date-fns';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import processDemarkSignals from './DemarkIndicator';
 import FullScreenModal from './FullScreenModal';
+import { useTheme } from '../context/ThemeContext';
 
 // Register all required components and controllers
 ChartJS.register(
@@ -94,16 +95,34 @@ const zoomOptions = {
   },
 };
 
-// Add CSS at the top of the file
-const chartContainerStyle = {
-  cursor: 'grab',
-} as const;
+// Chart container style will be dynamically generated within the component
 
 const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevels }) => {
   const [chartType, setChartType] = useState<ChartType>('candlestick');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('all');
   const [hoveredIndicator, setHoveredIndicator] = useState<string | null>(null);
   const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
+  const { theme } = useTheme();  // Get current theme
+  
+  // Define theme-based chart colors
+  const chartTheme = {
+    textColor: theme === 'dark' ? '#e2e8f0' : '#374151',
+    gridColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',  // Much darker background
+    tooltipBackgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.9)',
+    tooltipTextColor: theme === 'dark' ? '#f1f5f9' : '#333333',
+    // Chart specific colors
+    upColor: theme === 'dark' ? '#4ade80' : '#22c55e',       // Brighter green for up candles in dark mode
+    downColor: theme === 'dark' ? '#f87171' : '#dc2626',     // Brighter red for down candles in dark mode
+    volumeColor: theme === 'dark' ? '#38bdf8' : '#3b82f6',   // Brighter blue for volume
+    macdLineColor: theme === 'dark' ? '#38bdf8' : '#3b82f6', // Brighter blue for MACD line
+    signalLineColor: theme === 'dark' ? '#f87171' : '#dc2626', // Brighter red for signal line
+    histPositiveColor: theme === 'dark' ? '#4ade80' : '#22c55e', // Brighter green for positive histogram
+    histNegativeColor: theme === 'dark' ? '#f87171' : '#dc2626', // Brighter red for negative histogram
+    rsiLineColor: theme === 'dark' ? '#fbbf24' : '#d97706',  // Brighter amber for RSI
+    bollingerColor: theme === 'dark' ? '#a78bfa' : '#7c3aed', // Brighter purple for Bollinger
+    labelBackgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.85)',
+  };
 
   const indicatorDescriptions: Record<string, string> = {
     'RSI': 'Relative Strength Index (RSI) measures momentum. Values above 70 indicate overbought conditions (potential price drop), while values below 30 indicate oversold conditions (potential price rise). The RSI helps identify potential reversal points.',
@@ -111,6 +130,22 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions. CCI helps identify trend reversals and extreme market conditions.',
     'Bollinger': 'Bollinger Bands measure volatility using standard deviations. When bands narrow, it indicates low volatility (squeeze). When price touches the upper band, it may be overbought; touching the lower band may indicate oversold conditions. The middle band is a 20-day moving average.',
     'Demark': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. Buy signals (green triangles) appear after a sequence of lower closes, indicating a potential upward reversal. Sell signals (red triangles) appear after a sequence of higher closes, indicating a potential downward reversal.'
+  };
+  
+  // Force chart re-render when theme changes
+  useEffect(() => {
+    // The chart will automatically re-render when any of its props or state changes
+    // This effect is triggered when theme changes, causing the component to re-render
+    // with the new theme colors
+  }, [theme]);
+
+  // Define chart container style based on current theme
+  const chartContainerStyle = {
+    cursor: 'grab',
+    backgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.5)',
+    borderRadius: '8px',
+    padding: '12px',
+    border: theme === 'dark' ? '1px solid #1e293b' : '1px solid #e0e0e0',
   };
 
   // Chart header component with info icon
@@ -126,7 +161,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         fontSize: '16px', 
         fontWeight: 600, 
         margin: 0,
-        color: '#374151'
+        color: chartTheme.textColor
       }}>
         {title}
       </h3>
@@ -141,12 +176,12 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           width: '16px',
           height: '16px',
           marginLeft: '6px',
-          backgroundColor: '#e5e7eb',
+          backgroundColor: theme === 'dark' ? '#4b5563' : '#e5e7eb',
           borderRadius: '50%',
           cursor: 'help',
           fontSize: '11px',
           fontWeight: 'bold',
-          color: '#6b7280',
+          color: theme === 'dark' ? '#d1d5db' : '#6b7280',
           position: 'relative',
         }}
       >
@@ -161,15 +196,15 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
               transform: 'translateX(-50%)',
               marginBottom: '8px',
               padding: '8px 12px',
-              backgroundColor: 'rgba(31, 41, 55, 0.95)',
-              color: 'white',
+              backgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(31, 41, 55, 0.95)',
+              color: theme === 'dark' ? '#f1f5f9' : 'white',
               borderRadius: '6px',
               fontSize: '12px',
               lineHeight: '1.4',
               width: '280px',
               textAlign: 'left',
               zIndex: 1000,
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              boxShadow: theme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.4)' : '0 4px 6px rgba(0, 0, 0, 0.2)',
               fontWeight: 'normal',
             }}
           >
@@ -184,7 +219,9 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                 height: 0,
                 borderLeft: '6px solid transparent',
                 borderRight: '6px solid transparent',
-                borderTop: '6px solid rgba(31, 41, 55, 0.95)',
+                borderTop: theme === 'dark' 
+                  ? '6px solid rgba(15, 23, 42, 0.95)' 
+                  : '6px solid rgba(31, 41, 55, 0.95)',
               }}
             />
           </div>
@@ -278,13 +315,13 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           x: new Date(date).getTime(),
           y: filteredData.ohlc.close[index],
         })),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        borderColor: theme === 'dark' ? 'rgb(56, 189, 248)' : 'rgb(14, 165, 233)',
+        backgroundColor: theme === 'dark' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(14, 165, 233, 0.1)',
         borderWidth: 2,
         pointRadius: 0,
         type: 'line' as const,
       },
-      filteredData.indicators.sma20 && {
+      ...(filteredData.indicators.sma20 ? [{
         label: 'SMA 20',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -294,8 +331,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 1,
         pointRadius: 0,
         type: 'line' as const,
-      },
-      filteredData.indicators.sma50 && {
+      }] : []),
+      ...(filteredData.indicators.sma50 ? [{
         label: 'SMA 50',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -305,8 +342,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 1,
         pointRadius: 0,
         type: 'line' as const,
-      },
-      filteredData.indicators.sma150 && {
+      }] : []),
+      ...(filteredData.indicators.sma150 ? [{
         label: 'SMA 150',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -316,8 +353,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 1,
         pointRadius: 0,
         type: 'line' as const,
-      },
-      filteredData.indicators.sma200 && {
+      }] : []),
+      ...(filteredData.indicators.sma200 ? [{
         label: 'SMA 200',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -327,15 +364,15 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 1,
         pointRadius: 0,
         type: 'line' as const,
-      },
-    ].filter(Boolean) : [
+      }] : []),
+    ] : [
       {
         label: ticker,
         data: candlestickData,
         type: 'candlestick' as const,
         color: {
-          up: '#26a69a',
-          down: '#ef5350',
+          up: chartTheme.upColor,
+          down: chartTheme.downColor,
           unchanged: '#999',
         },
         borderColor: {
@@ -349,7 +386,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           unchanged: '#999',
         },
       },
-      filteredData.indicators.sma20 && {
+      ...(filteredData.indicators.sma20 ? [{
         label: 'SMA 20',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -359,8 +396,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 2,
         pointRadius: 0,
         type: 'line' as const,
-      },
-      filteredData.indicators.sma50 && {
+      }] : []),
+      ...(filteredData.indicators.sma50 ? [{
         label: 'SMA 50',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -370,8 +407,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 2,
         pointRadius: 0,
         type: 'line' as const,
-      },
-      filteredData.indicators.sma150 && {
+      }] : []),
+      ...(filteredData.indicators.sma150 ? [{
         label: 'SMA 150',
         data: filteredData.dates.map((date, index) => ({
           x: new Date(date).getTime(),
@@ -381,8 +418,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         borderWidth: 2,
         pointRadius: 0,
         type: 'line' as const,
-      },
-    ].filter(Boolean) as any[],
+      }] : []),
+    ],
   };
 
   // Volume chart data
@@ -393,16 +430,16 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         label: 'Volume',
         data: filteredData.volume,
         backgroundColor: filteredData.ohlc.close.map((close, index) => {
-          if (index === 0) return 'rgba(75, 192, 192, 0.5)';
+          if (index === 0) return theme === 'dark' ? 'rgba(56, 189, 248, 0.5)' : 'rgba(14, 165, 233, 0.5)';
           return close >= filteredData.ohlc.close[index - 1] 
-            ? 'rgba(75, 192, 192, 0.5)' 
-            : 'rgba(255, 99, 132, 0.5)';
+            ? theme === 'dark' ? 'rgba(134, 239, 172, 0.5)' : 'rgba(34, 197, 94, 0.5)'
+            : theme === 'dark' ? 'rgba(252, 165, 165, 0.5)' : 'rgba(239, 68, 68, 0.5)';
         }),
         borderColor: filteredData.ohlc.close.map((close, index) => {
-          if (index === 0) return 'rgba(75, 192, 192, 1)';
+          if (index === 0) return theme === 'dark' ? 'rgba(56, 189, 248, 1)' : 'rgba(14, 165, 233, 1)';
           return close >= filteredData.ohlc.close[index - 1] 
-            ? 'rgba(75, 192, 192, 1)' 
-            : 'rgba(255, 99, 132, 1)';
+            ? theme === 'dark' ? 'rgba(134, 239, 172, 1)' : 'rgba(34, 197, 94, 1)'
+            : theme === 'dark' ? 'rgba(252, 165, 165, 1)' : 'rgba(239, 68, 68, 1)';
         }),
         borderWidth: 1,
         type: 'bar' as const,
@@ -449,7 +486,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   const macdData = {
     labels: filteredData.dates,
     datasets: [
-      filteredData.indicators.macd && {
+      ...(filteredData.indicators.macd ? [{
         label: 'MACD',
         data: filteredData.indicators.macd,
         borderColor: 'rgb(54, 162, 235)',
@@ -458,8 +495,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         pointRadius: 0,
         tension: 0.1,
         type: 'line' as const,
-      },
-      filteredData.indicators.macdSignal && {
+      }] : []),
+      ...(filteredData.indicators.macdSignal ? [{
         label: 'Signal',
         data: filteredData.indicators.macdSignal,
         borderColor: 'rgb(255, 99, 132)',
@@ -468,8 +505,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         pointRadius: 0,
         tension: 0.1,
         type: 'line' as const,
-      },
-      filteredData.indicators.macdHist && {
+      }] : []),
+      ...(filteredData.indicators.macdHist ? [{
         label: 'Histogram',
         data: filteredData.indicators.macdHist,
         backgroundColor: filteredData.indicators.macdHist.map(value => 
@@ -480,8 +517,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         ),
         borderWidth: 1,
         type: 'bar' as const,
-      },
-    ].filter(Boolean) as any[],
+      }] : []),
+    ],
   };
 
   // CCI chart data
@@ -642,6 +679,16 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       legend: {
         position: 'top' as const,
         display: true,
+        labels: {
+          color: chartTheme.textColor,
+        }
+      },
+      tooltip: {
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -657,16 +704,25 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         grid: {
           display: false,
         },
+        ticks: {
+          color: chartTheme.textColor,
+        }
       },
       y: {
         position: 'right' as const,
         grid: {
-          color: 'rgba(156, 163, 175, 0.15)',
+          color: chartTheme.gridColor,
         },
         ticks: {
           callback: function(value: any) {
             return '$' + value;
           },
+          color: chartTheme.textColor,
+        },
+        title: {
+          display: true,
+          text: 'Price ($)',
+          color: chartTheme.textColor,
         },
       },
     },
@@ -687,10 +743,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         font: {
           size: 16,
         },
+        color: chartTheme.textColor,
       },
       legend: {
         position: 'top' as const,
         display: true,
+        labels: {
+          color: chartTheme.textColor,
+        }
       },
       tooltip: {
         callbacks: {
@@ -718,6 +778,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return '';
           },
         },
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -733,6 +798,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Date',
+          color: chartTheme.textColor,
+        },
+        ticks: {
+          color: chartTheme.textColor,
+        },
+        grid: {
+          display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -741,11 +814,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Price ($)',
+          color: chartTheme.textColor,
         },
         ticks: {
           callback: function(value: any) {
             return '$' + value.toFixed(0);
           },
+          color: chartTheme.textColor,
+        },
+        grid: {
+          display: true,
+          color: chartTheme.gridColor,
         },
       },
     },
@@ -766,10 +845,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         font: {
           size: 18,
         },
+        color: chartTheme.textColor,
       },
       legend: {
         position: 'top' as const,
         display: true,
+        labels: {
+          color: chartTheme.textColor,
+        }
       },
       tooltip: {
         callbacks: chartType === 'candlestick' ? {
@@ -789,6 +872,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return '';
           },
         } : undefined,
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -804,14 +892,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Date',
+          color: chartTheme.textColor,
         },
         ticks: {
           maxRotation: 0,
           autoSkip: true,
           maxTicksLimit: 10,
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         offset: true,
         padding: {
@@ -825,9 +916,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Price ($)',
+          color: chartTheme.textColor,
+        },
+        ticks: {
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         beginAtZero: false,
         grace: '5%',
@@ -855,6 +951,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         font: {
           size: 18,
         },
+        color: chartTheme.textColor,
       },
       legend: {
         display: false,
@@ -869,6 +966,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return label;
           },
         },
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -878,13 +980,16 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Date',
+          color: chartTheme.textColor,
         },
         ticks: {
           maxTicksLimit: 10,
           autoSkip: true,
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -893,14 +998,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Volume',
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         ticks: {
           callback: function(value: any) {
             return (Number(value) / 1e6).toFixed(0) + 'M';
           },
+          color: chartTheme.textColor,
         },
         beginAtZero: true,
         grace: '5%',
@@ -919,9 +1027,13 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     plugins: {
       title: {
         display: false,
+        color: chartTheme.textColor,
       },
       legend: {
         display: false,
+        labels: {
+          color: chartTheme.textColor,
+        }
       },
       tooltip: {
         callbacks: {
@@ -932,6 +1044,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return '';
           },
         },
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -941,9 +1058,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         ticks: {
           maxTicksLimit: 10,
           autoSkip: true,
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -952,6 +1071,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'RSI',
+          color: chartTheme.textColor,
         },
         min: 0,
         max: 100,
@@ -959,9 +1079,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           callback: function(value: any) {
             return value;
           },
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         grace: '5%',
       },
@@ -979,9 +1101,20 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     plugins: {
       title: {
         display: false,
+        color: chartTheme.textColor,
       },
       legend: {
         position: 'top' as const,
+        labels: {
+          color: chartTheme.textColor,
+        }
+      },
+      tooltip: {
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -991,9 +1124,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         ticks: {
           maxTicksLimit: 10,
           autoSkip: true,
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -1002,9 +1137,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'MACD',
+          color: chartTheme.textColor,
+        },
+        ticks: {
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         grace: '5%',
       },
@@ -1022,9 +1162,13 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     plugins: {
       title: {
         display: false,
+        color: chartTheme.textColor,
       },
       legend: {
         display: false,
+        labels: {
+          color: chartTheme.textColor,
+        }
       },
       tooltip: {
         callbacks: {
@@ -1035,6 +1179,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return '';
           },
         },
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -1044,9 +1193,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         ticks: {
           maxTicksLimit: 10,
           autoSkip: true,
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -1055,6 +1206,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'CCI',
+          color: chartTheme.textColor,
         },
         min: -200,
         max: 200,
@@ -1062,9 +1214,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           callback: function(value: any) {
             return value;
           },
+          color: chartTheme.textColor,
         },
         grid: {
           display: true,
+          color: chartTheme.gridColor,
         },
         grace: '5%',
       },
@@ -1082,10 +1236,14 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     plugins: {
       title: {
         display: false,
+        color: chartTheme.textColor,
       },
       legend: {
         position: 'top' as const,
         display: true,
+        labels: {
+          color: chartTheme.textColor,
+        }
       },
       tooltip: {
         callbacks: {
@@ -1098,6 +1256,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             return '';
           },
         },
+        backgroundColor: chartTheme.tooltipBackgroundColor,
+        titleColor: chartTheme.tooltipTextColor,
+        bodyColor: chartTheme.tooltipTextColor,
+        borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
       },
       zoom: zoomOptions as any,
     },
@@ -1107,6 +1270,11 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         ticks: {
           maxTicksLimit: 10,
           autoSkip: true,
+          color: chartTheme.textColor,
+        },
+        grid: {
+          display: true,
+          color: chartTheme.gridColor,
         },
       },
       y: {
@@ -1115,11 +1283,17 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         title: {
           display: true,
           text: 'Price ($)',
+          color: chartTheme.textColor,
         },
         ticks: {
           callback: function(value: any) {
             return '$' + value.toFixed(0);
           },
+          color: chartTheme.textColor,
+        },
+        grid: {
+          display: true,
+          color: chartTheme.gridColor,
         },
       },
     },
@@ -1252,18 +1426,12 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             className={`time-interval-button ${timeInterval === 'all' ? 'active' : ''}`}
             onClick={() => setTimeInterval('all')}
           >
-            ALL
+            All
           </button>
         </div>
       </div>
-      <div className="zoom-instructions">
-        <small>
-          💡 Scroll to zoom X & Y axes • Click and drag to move chart • 
-          Double-click to reset
-        </small>
-      </div>
       
-      <div className="chart-wrapper">
+      <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
         {renderChartHeader(`${ticker} Stock Price`, 'price')}
         <div className="chart-container" 
           style={{ 
@@ -1412,8 +1580,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                       },
                     },
                   } as any,
-                  // Demark Buy Signals
-                  demarkSignals.buyPoints.length > 0 ? {
+                  ...(demarkSignals.buyPoints.length > 0 ? [{
                     label: 'Demark Buy Signal',
                     data: demarkSignals.buyPoints,
                     backgroundColor: 'rgba(52, 211, 153, 1)',
@@ -1423,9 +1590,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     pointHoverRadius: 15,
                     showLine: false,
                     type: 'scatter' as const,
-                  } : null,
-                  // Demark Sell Signals
-                  demarkSignals.sellPoints.length > 0 ? {
+                  }] : []),
+                  ...(demarkSignals.sellPoints.length > 0 ? [{
                     label: 'Demark Sell Signal',
                     data: demarkSignals.sellPoints,
                     backgroundColor: 'rgba(239, 68, 68, 1)',
@@ -1436,8 +1602,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     pointHoverRadius: 15,
                     showLine: false,
                     type: 'scatter' as const,
-                  } : null,
-                ].filter(Boolean) as any[],
+                  }] : [])
+                ]
               }}
               options={{
                 ...demarkChartOptions,
@@ -1647,7 +1813,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                       },
                     },
                   } as any,
-                  demarkSignals.buyPoints.length > 0 ? {
+                  ...(demarkSignals.buyPoints.length > 0 ? [{
                     label: 'Demark Buy Signal',
                     data: demarkSignals.buyPoints,
                     backgroundColor: 'rgba(52, 211, 153, 1)',
@@ -1657,8 +1823,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     pointHoverRadius: 15,
                     showLine: false,
                     type: 'scatter' as const,
-                  } : null,
-                  demarkSignals.sellPoints.length > 0 ? {
+                  }] : []),
+                  ...(demarkSignals.sellPoints.length > 0 ? [{
                     label: 'Demark Sell Signal',
                     data: demarkSignals.sellPoints,
                     backgroundColor: 'rgba(239, 68, 68, 1)',
@@ -1669,8 +1835,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     pointHoverRadius: 15,
                     showLine: false,
                     type: 'scatter' as const,
-                  } : null,
-                ].filter(Boolean) as any[],
+                  }] : [])
+                ]
               }}
               options={demarkChartOptions}
             />

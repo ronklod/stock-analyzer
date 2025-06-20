@@ -14,12 +14,14 @@ import { StockAnalysisResponse } from './types';
 import PriceTargetsCard from './components/PriceTargetsCard';
 import WatchlistButton from './components/WatchlistButton';
 import { useApi } from './utils/apiClient';
+import './theme.css'; // Import theme styles
 
 // Auth pages
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 function StockAnalyzer() {
   const [searchParams] = useSearchParams();
@@ -140,36 +142,38 @@ function StockAnalyzer() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Header />
-          <main className="App-main">
-            <Routes>
-              {/* Public routes - only login and register */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              
-              {/* All other routes require authentication */}
-              <Route element={<ProtectedRoute />}>
-                {/* Main analyzer route */}
-                <Route path="/" element={<StockAnalyzer />} />
+      <ThemeProvider>
+        <Router>
+          <div className="App">
+            <Header />
+            <main className="App-main">
+              <Routes>
+                {/* Public routes - only login and register */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
                 
-                {/* Screener routes */}
-                <Route path="/screener/nasdaq100" element={<StockScreener type="nasdaq100" />} />
-                <Route path="/screener/sp500" element={<StockScreener type="sp500" />} />
-                <Route path="/screener/mag7" element={<StockScreener type="mag7" />} />
-                
-                {/* User profile and watchlist */}
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/watchlist" element={<WatchlistPage />} />
-              </Route>
-            </Routes>
-          </main>
+                {/* All other routes require authentication */}
+                <Route element={<ProtectedRoute />}>
+                  {/* Main analyzer route */}
+                  <Route path="/" element={<StockAnalyzer />} />
+                  
+                  {/* Screener routes */}
+                  <Route path="/screener/nasdaq100" element={<StockScreener type="nasdaq100" />} />
+                  <Route path="/screener/sp500" element={<StockScreener type="sp500" />} />
+                  <Route path="/screener/mag7" element={<StockScreener type="mag7" />} />
+                  
+                  {/* User profile and watchlist */}
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/watchlist" element={<WatchlistPage />} />
+                </Route>
+              </Routes>
+            </main>
 
-        </div>
-      </Router>
+          </div>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
 
-export default App; 
+export default App;

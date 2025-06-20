@@ -23,6 +23,9 @@ class User(Base):
     
     # Relationship with watchlist items
     watchlist_items = relationship("WatchlistItem", back_populates="owner")
+    
+    # Relationship with user preferences
+    preferences = relationship("UserPreference", back_populates="user", uselist=False)
 
 class WatchlistItem(Base):
     __tablename__ = "watchlist"
@@ -36,3 +39,14 @@ class WatchlistItem(Base):
     
     # Relationship with user
     owner = relationship("User", back_populates="watchlist_items")
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    theme = Column(String, default="light")  # 'light' or 'dark'
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship with user
+    user = relationship("User", back_populates="preferences")
