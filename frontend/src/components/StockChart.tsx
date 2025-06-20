@@ -738,12 +738,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     },
     plugins: {
       title: {
-        display: true,
-        text: 'Support & Resistance Levels',
-        font: {
-          size: 16,
-        },
-        color: chartTheme.textColor,
+        display: false,
       },
       legend: {
         position: 'top' as const,
@@ -840,12 +835,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     },
     plugins: {
       title: {
-        display: true,
-        text: `${ticker} Stock Price`,
-        font: {
-          size: 18,
-        },
-        color: chartTheme.textColor,
+        display: false,
       },
       legend: {
         position: 'top' as const,
@@ -946,12 +936,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     },
     plugins: {
       title: {
-        display: true,
-        text: `${ticker} Trading Volume`,
-        font: {
-          size: 18,
-        },
-        color: chartTheme.textColor,
+        display: false,
       },
       legend: {
         display: false,
@@ -1432,7 +1417,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       </div>
       
       <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-        {renderChartHeader(`${ticker} Stock Price`, 'price')}
+        {renderChartHeader(`${ticker} - Stock Price`, 'price')}
         <div className="chart-container" 
           style={{ 
             height: '400px',
@@ -1456,7 +1441,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       </div>
       
       <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-        {renderChartHeader('Volume', 'volume')}
+        {renderChartHeader(`${ticker} - Volume`, 'volume')}
         <div className="chart-container" 
           style={{ 
             height: '200px',
@@ -1481,7 +1466,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* RSI Chart */}
       {filteredData.indicators.rsi && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          {renderChartHeader('RSI (Relative Strength Index)', 'rsi')}
+          {renderChartHeader(`${ticker} - RSI (Relative Strength Index)`, 'rsi')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart 
               type='line' 
@@ -1503,7 +1488,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* MACD Chart */}
       {(filteredData.indicators.macd || filteredData.indicators.macdSignal) && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          {renderChartHeader('MACD (Moving Average Convergence Divergence)', 'macd')}
+          {renderChartHeader(`${ticker} - MACD (Moving Average Convergence Divergence)`, 'macd')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='bar' data={macdData} options={macdOptions} />
           </div>
@@ -1513,7 +1498,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* CCI Chart */}
       {filteredData.indicators.cci && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          {renderChartHeader('CCI (Commodity Channel Index)', 'cci')}
+          {renderChartHeader(`${ticker} - CCI (Commodity Channel Index)`, 'cci')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='line' data={cciData} options={cciOptions} />
           </div>
@@ -1523,7 +1508,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* Bollinger Bands */}
       {filteredData.indicators.bbUpper && filteredData.indicators.bbLower && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          {renderChartHeader('Bollinger Bands', 'bollinger')}
+          {renderChartHeader(`${ticker} - Bollinger Bands`, 'bollinger')}
           <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='line' data={bollingerData} options={bollingerOptions} />
           </div>
@@ -1544,7 +1529,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
               fontWeight: 600, 
               margin: 0,
               color: '#374151'
-            }}>Demark Indicator</h3>
+            }}>{ticker} - Demark Indicator Buy/Sell Signals</h3>
             
             <button
               onClick={() => setFullScreenChart('demark')}
@@ -1610,7 +1595,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                 plugins: {
                   ...demarkChartOptions.plugins,
                   title: {
-                    display: true,
+                    display: false,
                     text: 'Demark Indicator Buy/Sell Signals',
                     font: {
                       size: 16,
@@ -1663,7 +1648,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
               fontWeight: 600, 
               margin: 0,
               color: '#374151'
-            }}>Support & Resistance Levels</h3>
+            }}>{ticker} - Support & Resistance Levels</h3>
             
             <button
               onClick={() => setFullScreenChart('support-resistance')}
@@ -1691,7 +1676,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* Fullscreen Chart Components */}
       <FullScreenModal 
         isOpen={fullScreenChart === 'price'}
-        title={`${ticker} Stock Price (${chartType === 'line' ? 'Line' : 'Candlestick'})`}
+        title={`${ticker} - Stock Price (${chartType === 'line' ? 'Line' : 'Candlestick'})`}
         onClose={() => setFullScreenChart(null)}
       >
         <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1713,7 +1698,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
 
       <FullScreenModal 
         isOpen={fullScreenChart === 'volume'}
-        title={`${ticker} Trading Volume`}
+        title={`${ticker} - Trading Volume`}
         onClose={() => setFullScreenChart(null)}
       >
         <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1728,7 +1713,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {filteredData.indicators.rsi && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'rsi'}
-          title="RSI (Relative Strength Index)"
+          title={`${ticker} - RSI (Relative Strength Index`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1744,7 +1729,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {(filteredData.indicators.macd || filteredData.indicators.macdSignal) && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'macd'}
-          title="MACD (Moving Average Convergence Divergence)"
+          title={`${ticker} - MACD (Moving Average Convergence Divergence)`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1760,7 +1745,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {filteredData.indicators.cci && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'cci'}
-          title="CCI (Commodity Channel Index)"
+          title={`${ticker} - CCI (Commodity Channel Index)`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1776,7 +1761,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {filteredData.indicators.bbUpper && filteredData.indicators.bbLower && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'bollinger'}
-          title="Bollinger Bands"
+          title={`${ticker} - Bollinger Bands`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1793,7 +1778,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'demark'}
-          title="Demark Indicator"
+          title={`${ticker} - Demark Indicator Buy/Sell Signals`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
@@ -1847,7 +1832,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {supportResistanceLevels.length > 0 && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'support-resistance'}
-          title="Support & Resistance Levels"
+          title={`${ticker} - Support & Resistance Levels`}
           onClose={() => setFullScreenChart(null)}
         >
           <div className="chart-container" style={{ height: 'calc(100vh - 120px)', ...chartContainerStyle }}>
