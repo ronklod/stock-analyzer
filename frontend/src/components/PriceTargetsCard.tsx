@@ -200,7 +200,7 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
           <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', marginBottom: '1rem', color: '#666' }}>Support & Resistance Levels</h3>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(250px, 1fr))', 
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', 
             gap: '0.75rem' 
           }}>
             {supportResistanceLevels.map((level, index) => (
