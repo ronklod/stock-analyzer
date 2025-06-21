@@ -53,7 +53,7 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
             <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>
               Current Price
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 600,color: '#666' }}>
               {formatPrice(priceTargets.currentPrice)}
             </div>
           </div>
@@ -66,7 +66,7 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
             <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>
               Risk/Reward Ratio
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#666' }}>
               {priceTargets.riskRewardRatio.toFixed(2)}
             </div>
             <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
@@ -79,11 +79,12 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
           display: 'grid', 
           gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
           gap: isMobile ? '1.5rem' : '2rem', 
-          marginBottom: '1.5rem' 
+          marginBottom: '1.5rem' ,
+          color: '#666'
         }}>
           {/* Price Targets Section */}
           <div>
-            <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', marginBottom: '1rem' }}>Price Targets</h3>
+            <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', marginBottom: '1rem',color: '#666' }}>Price Targets</h3>
             <div id="price-targets-container" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div style={{ 
                 display: 'flex', 
@@ -166,7 +167,7 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
           {/* Calculation Explanation - Only shown on desktop */}
           {!isMobile && (
             <div>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>How Targets Are Calculated</h3>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem',color: '#666' }}>How Targets Are Calculated</h3>
               <div style={{ 
                 backgroundColor: '#f8f9fa',
                 padding: '1rem',
@@ -196,7 +197,7 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
 
         {/* Support & Resistance Levels */}
         <div>
-          <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', marginBottom: '1rem' }}>Support & Resistance Levels</h3>
+          <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', marginBottom: '1rem', color: '#666' }}>Support & Resistance Levels</h3>
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(250px, 1fr))', 
@@ -208,11 +209,12 @@ const PriceTargetsCard: React.FC<Props> = ({ priceTargets, supportResistanceLeve
                 justifyContent: 'space-between',
                 padding: '0.75rem',
                 backgroundColor: level.type === 'Support' ? '#dcfce7' : '#fee2e2',
-                borderRadius: '8px'
+                borderRadius: '8px',
+                color: '#666'
               }}>
-                <span>{level.type}</span>
+                <span>{level.type}: </span>
                 <div>
-                  <span style={{ fontWeight: 600, marginRight: '0.5rem' }}>
+                  <span style={{ fontWeight: 600, marginRight: '0.5rem', color: '#666' }}>
                     {formatPrice(level.price)}
                   </span>
                   <span style={{ 
