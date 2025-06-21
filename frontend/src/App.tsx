@@ -100,8 +100,13 @@ function StockAnalyzer() {
 
         {stockData && (
           <section className="results-section">
-            <div className={`results-header ${isMobile ? 'mobile-stack' : ''}`} style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }}>
-              <h2>{stockData.companyInfo.name} ({stockData.ticker})</h2>
+            <div
+              className={`results-header ${isMobile ? 'mobile-stack' : ''}`}
+              style={{
+              marginBottom: isMobile ? '0.5rem' : '1rem'
+              }}
+            >
+              <h2 style={{ marginBottom: isMobile ? '1rem' : '0.5rem'}}>{stockData.companyInfo.name} ({stockData.ticker})</h2>
               <WatchlistButton symbol={stockData.ticker} companyName={stockData.companyInfo.name} />
             </div>
             
