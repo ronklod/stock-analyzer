@@ -19,11 +19,22 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
-  Alert
+  Alert,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
+  Divider,
+  useMediaQuery
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PersonIcon from '@mui/icons-material/Person';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import EmailIcon from '@mui/icons-material/Email';
 import { format } from 'date-fns';
 import { useTheme } from '../context/ThemeContext';
 import { useApi } from '../utils/apiClient';
@@ -46,6 +57,7 @@ const AdminPage: React.FC = () => {
   const [action, setAction] = useState<'delete' | 'disable' | 'enable' | null>(null);
   const { theme } = useTheme();
   const api = useApi();
+  const isMobile = useMediaQuery('(max-width:768px)');
   
   const fetchUsers = async () => {
     setLoading(true);
@@ -152,6 +164,215 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  // Mobile card view to display user information
+  const renderMobileUserCards = () => {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {users.map((user) => (
+          <Card 
+            key={user.id}
+            sx={{ 
+              bgcolor: !user.is_active 
+                ? (theme === 'dark' ? '#402c3c' : '#fff0f0') 
+                : (theme === 'dark' ? '#272738' : 'white'),
+              boxShadow: 2,
+              borderRadius: 2
+            }}
+          >
+            <CardContent sx={{ pb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <AccountCircleIcon sx={{ fontSize: 40, mr: 1.5, color: theme === 'dark' ? '#aaa' : '#666' }} />
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" sx={{ fontSize: '1.1rem', color: theme === 'dark' ? '#ddd' : '#333', wordBreak: 'break-word' }}>
+                    {user.email}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                    {user.is_admin ? (
+                      <Chip 
+                        icon={<AdminPanelSettingsIcon />} 
+                        label="Admin" 
+                        size="small" 
+                        color="primary" 
+                        sx={{ mr: 1 }} 
+                      />
+                    ) : (
+                      <Chip 
+                        icon={<PersonIcon />} 
+                        label="User" 
+                        size="small" 
+                        variant="outlined" 
+                        sx={{ mr: 1 }} 
+                      />
+                    )}
+                    <Chip 
+                      label={user.is_active ? "Active" : "Disabled"} 
+                      size="small" 
+                      color={user.is_active ? "success" : "error"} 
+                    />
+                  </Box>
+                </Box>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <EmailIcon sx={{ fontSize: 16, mr: 1, color: theme === 'dark' ? '#aaa' : '#666' }} />
+                  <Typography variant="body2" sx={{ color: theme === 'dark' ? '#bbb' : '#555' }}>
+                    ID: {user.id}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon sx={{ fontSize: 16, mr: 1, color: theme === 'dark' ? '#aaa' : '#666' }} />
+                  <Typography variant="body2" sx={{ color: theme === 'dark' ? '#bbb' : '#555' }}>
+                    Name: {user.display_name || '-'}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CalendarTodayIcon sx={{ fontSize: 16, mr: 1, color: theme === 'dark' ? '#aaa' : '#666' }} />
+                  <Typography variant="body2" sx={{ color: theme === 'dark' ? '#bbb' : '#555' }}>
+                    Created: {new Date(user.created_at).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+            
+            <Divider sx={{ my: 1, opacity: 0.6 }} />
+            
+            <CardActions sx={{ display: 'flex', justifyContent: 'flex-end', p: 1.5, pt: 0.5 }}>
+              {user.is_active ? (
+                <Button 
+                  onClick={() => handleAction(user, 'disable')}
+                  disabled={user.is_admin}
+                  color="warning"
+                  variant="outlined"
+                  startIcon={<BlockIcon />}
+                  size="small"
+                  sx={{ mr: 1, minWidth: '100px', minHeight: '36px' }}
+                >
+                  Disable
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => handleAction(user, 'enable')}
+                  color="success"
+                  variant="outlined"
+                  startIcon={<CheckCircleIcon />}
+                  size="small"
+                  sx={{ mr: 1, minWidth: '100px', minHeight: '36px' }}
+                >
+                  Enable
+                </Button>
+              )}
+              <Button 
+                onClick={() => handleAction(user, 'delete')}
+                disabled={user.is_admin}
+                color="error"
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                size="small"
+                sx={{ minWidth: '100px', minHeight: '36px' }}
+              >
+                Delete
+              </Button>
+            </CardActions>
+          </Card>
+        ))}
+      </Box>
+    );
+  };
+
+  // Desktop table view
+  const renderDesktopTable = () => {
+    return (
+      <TableContainer component={Paper} sx={{ 
+        boxShadow: 1,
+        bgcolor: theme === 'dark' ? '#272738' : 'white',
+        borderRadius: 1
+      }}>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow sx={{ bgcolor: theme === 'dark' ? '#1e1e2f' : '#f5f5f5' }}>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>ID</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Email</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Display Name</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Status</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Role</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Created</TableCell>
+              <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow 
+                key={user.id}
+                sx={{ 
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  bgcolor: !user.is_active ? (theme === 'dark' ? '#402c3c' : '#fff0f0') : 'transparent'
+                }}
+              >
+                <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.id}</TableCell>
+                <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.email}</TableCell>
+                <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.display_name || '-'}</TableCell>
+                <TableCell>
+                  <Box sx={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    color: user.is_active 
+                      ? (theme === 'dark' ? '#90ee90' : 'green') 
+                      : (theme === 'dark' ? '#ff9999' : 'red')
+                  }}>
+                    {user.is_active ? 'Active' : 'Disabled'}
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>
+                  {user.is_admin ? 'Admin' : 'User'}
+                </TableCell>
+                <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>
+                  {new Date(user.created_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {user.is_active ? (
+                      <Tooltip title="Disable User">
+                        <IconButton 
+                          onClick={() => handleAction(user, 'disable')}
+                          disabled={user.is_admin}
+                          color="warning"
+                          size="small"
+                        >
+                          <BlockIcon />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="Enable User">
+                        <IconButton 
+                          onClick={() => handleAction(user, 'enable')}
+                          color="success"
+                          size="small"
+                        >
+                          <CheckCircleIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Delete User">
+                      <IconButton 
+                        onClick={() => handleAction(user, 'delete')}
+                        disabled={user.is_admin}
+                        color="error"
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 3 }, boxShadow: 3, bgcolor: theme === 'dark' ? '#1e1e2f' : 'white' }}>
@@ -170,93 +391,10 @@ const AdminPage: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer component={Paper} sx={{ 
-            boxShadow: 1,
-            bgcolor: theme === 'dark' ? '#272738' : 'white',
-            borderRadius: 1
-          }}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: theme === 'dark' ? '#1e1e2f' : '#f5f5f5' }}>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Email</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Display Name</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Role</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: theme === 'dark' ? '#fff' : '#333', fontWeight: 'bold' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow 
-                    key={user.id}
-                    sx={{ 
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      bgcolor: !user.is_active ? (theme === 'dark' ? '#402c3c' : '#fff0f0') : 'transparent'
-                    }}
-                  >
-                    <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.id}</TableCell>
-                    <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.email}</TableCell>
-                    <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>{user.display_name || '-'}</TableCell>
-                    <TableCell>
-                      <Box sx={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center',
-                        color: user.is_active 
-                          ? (theme === 'dark' ? '#90ee90' : 'green') 
-                          : (theme === 'dark' ? '#ff9999' : 'red')
-                      }}>
-                        {user.is_active ? 'Active' : 'Disabled'}
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>
-                      {user.is_admin ? 'Admin' : 'User'}
-                    </TableCell>
-                    <TableCell sx={{ color: theme === 'dark' ? '#ddd' : '#333' }}>
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        {user.is_active ? (
-                          <Tooltip title="Disable User">
-                            <IconButton 
-                              onClick={() => handleAction(user, 'disable')}
-                              disabled={user.is_admin}
-                              color="warning"
-                              size="small"
-                            >
-                              <BlockIcon />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title="Enable User">
-                            <IconButton 
-                              onClick={() => handleAction(user, 'enable')}
-                              color="success"
-                              size="small"
-                            >
-                              <CheckCircleIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        <Tooltip title="Delete User">
-                          <IconButton 
-                            onClick={() => handleAction(user, 'delete')}
-                            disabled={user.is_admin}
-                            color="error"
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <>
+            {/* Conditionally render card view for mobile or table for desktop */}
+            {isMobile ? renderMobileUserCards() : renderDesktopTable()}
+          </>
         )}
       </Paper>
       
