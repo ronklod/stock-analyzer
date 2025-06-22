@@ -375,7 +375,7 @@ Based on ${sentimentAnalysis.articles?.length || 0} recent articles
       <div className="card-header">
         <h2 className="card-title" style={{ fontSize: isMobile ? '1rem' : '1.3rem' }}>📈 Technical Analysis</h2>
       </div>
-      <div className="technical-content" style={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
+      <div className="technical-content" style={{ fontSize: isMobile ? '0.9rem' : '1rem',color: '#666' }}>
         <ChartSection 
           title="Technical Signals" 
         >

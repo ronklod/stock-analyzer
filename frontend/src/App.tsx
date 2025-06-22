@@ -23,6 +23,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { useTheme } from './context/ThemeContext';
 
 function StockAnalyzer() {
   const [searchParams] = useSearchParams();
@@ -32,6 +33,8 @@ function StockAnalyzer() {
   const [stockData, setStockData] = useState<StockAnalysisResponse | null>(null);
   const api = useApi();
   const isMobile = useMediaQuery('(max-width:768px)'); // Add responsive hook
+  const { theme } = useTheme(); // Get current theme from context
+  const isDarkTheme = theme === 'dark'; 
 
   // Check for ticker in URL params on mount
   useEffect(() => {
@@ -106,7 +109,8 @@ function StockAnalyzer() {
               marginBottom: isMobile ? '0.5rem' : '1rem'
               }}
             >
-              <h2 style={{ marginBottom: isMobile ? '1rem' : '0.5rem'}}>{stockData.companyInfo.name} ({stockData.ticker})</h2>
+             
+              <h2 style={{ marginBottom: isMobile ? '1rem' : '0.5rem', color : isDarkTheme ? '#fff' : '#666' }}>{stockData.companyInfo.name} ({stockData.ticker})</h2>
               <WatchlistButton symbol={stockData.ticker} companyName={stockData.companyInfo.name} />
             </div>
             
