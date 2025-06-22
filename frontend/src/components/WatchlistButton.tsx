@@ -94,7 +94,6 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
             <Tooltip title={currentComment || ''} placement="top">
                 <Button
                     variant="outlined"
-                    color={isInWatchlist ? 'primary' : 'inherit'}
                     onClick={isInWatchlist ? handleRemoveFromWatchlist : handleAddToWatchlist}
                     startIcon={isInWatchlist ? <StarIcon /> : <StarBorderIcon />}
                     size="small"
