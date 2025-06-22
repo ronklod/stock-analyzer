@@ -11,12 +11,14 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ScreeningResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const api = useApi();
 
   // Clear results when type changes
   useEffect(() => {
     setResults(null);
     setError(null);
+    setExpandedSections({});
   }, [type]);
 
   const handleFindStocks = async () => {
@@ -32,6 +34,19 @@ const StockScreener: React.FC<Props> = ({ type }) => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const toggleSection = (stockSymbol: string, section: string) => {
+    const key = `${stockSymbol}-${section}`;
+    setExpandedSections(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+  
+  const isSectionExpanded = (stockSymbol: string, section: string) => {
+    const key = `${stockSymbol}-${section}`;
+    return expandedSections[key] || false;
   };
 
   const getRecommendationClass = (rec: string) => {
@@ -108,21 +123,14 @@ const StockScreener: React.FC<Props> = ({ type }) => {
                   <p className="sector">{stock.sector}</p>
                 </div>
 
-                <div className="stock-metrics">
+                {/* Primary metrics always visible */}
+                <div className="stock-primary-metrics">
                   <div className="metric">
                     <span className="metric-label">Price</span>
                     <span className="metric-value">${stock.currentPrice.toFixed(2)}</span>
                   </div>
                   <div className="metric">
-                    <span className="metric-label">Market Cap</span>
-                    <span className="metric-value">{formatMarketCap(stock.marketCap)}</span>
-                  </div>
-                  <div className="metric">
-                    <span className="metric-label">P/E Ratio</span>
-                    <span className="metric-value">{stock.peRatio > 0 ? stock.peRatio.toFixed(2) : 'N/A'}</span>
-                  </div>
-                  <div className="metric">
-                    <span className="metric-label">20D Momentum</span>
+                    <span className="metric-label">Momentum</span>
                     <span className="metric-value" style={{
                       color: stock.momentum20d > 0 ? '#10b981' : '#ef4444'
                     }}>
@@ -130,42 +138,95 @@ const StockScreener: React.FC<Props> = ({ type }) => {
                     </span>
                   </div>
                 </div>
-
-                <div className="stock-scores">
-                  <div className="score-item">
-                    <span className="score-label">Attractiveness</span>
-                    <div className="score-bar">
-                      <div 
-                        className="score-fill attractiveness"
-                        style={{ width: `${Math.min(Math.max(stock.attractivenessScore, 0), 100)}%` }}
-                      />
-                    </div>
-                    <span className="score-value">{stock.attractivenessScore.toFixed(1)}</span>
+                
+                {/* Collapsible Financial Metrics */}
+                <div className="collapsible-section mobile-collapsible">
+                  <div 
+                    className="collapsible-header"
+                    onClick={() => toggleSection(stock.symbol, 'metrics')}
+                  >
+                    <span className="collapsible-title">Financial Metrics</span>
+                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'metrics') ? 'expanded' : ''}`}>
+                      ▼
+                    </span>
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Technical</span>
-                    <div className="score-bar">
-                      <div 
-                        className="score-fill technical"
-                        style={{ width: `${Math.min(Math.max(stock.technicalScore + 50, 0), 100)}%` }}
-                      />
+                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'metrics') ? 'expanded' : ''}`}>
+                    <div className="stock-metrics">
+                      <div className="metric">
+                        <span className="metric-label">Market Cap</span>
+                        <span className="metric-value">{formatMarketCap(stock.marketCap)}</span>
+                      </div>
+                      <div className="metric">
+                        <span className="metric-label">P/E Ratio</span>
+                        <span className="metric-value">{stock.peRatio > 0 ? stock.peRatio.toFixed(2) : 'N/A'}</span>
+                      </div>
                     </div>
-                    <span className="score-value">{stock.technicalScore.toFixed(1)}</span>
-                  </div>
-                  <div className="score-item">
-                    <span className="score-label">Sentiment</span>
-                    <div className="score-bar">
-                      <div 
-                        className="score-fill sentiment"
-                        style={{ width: `${Math.min(Math.max(stock.sentimentScore + 50, 0), 100)}%` }}
-                      />
-                    </div>
-                    <span className="score-value">{stock.sentimentScore.toFixed(1)}</span>
                   </div>
                 </div>
 
-                <div className="stock-description">
-                  <p>{stock.description}</p>
+                {/* Collapsible Score Analysis */}
+                <div className="collapsible-section mobile-collapsible">
+                  <div 
+                    className="collapsible-header"
+                    onClick={() => toggleSection(stock.symbol, 'scores')}
+                  >
+                    <span className="collapsible-title">Score Analysis</span>
+                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'scores') ? 'expanded' : ''}`}>
+                      ▼
+                    </span>
+                  </div>
+                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'scores') ? 'expanded' : ''}`}>
+                    <div className="stock-scores">
+                      <div className="score-item">
+                        <span className="score-label">Attractiveness</span>
+                        <div className="score-bar">
+                          <div 
+                            className="score-fill attractiveness"
+                            style={{ width: `${Math.min(Math.max(stock.attractivenessScore, 0), 100)}%` }}
+                          />
+                        </div>
+                        <span className="score-value">{stock.attractivenessScore.toFixed(1)}</span>
+                      </div>
+                      <div className="score-item">
+                        <span className="score-label">Technical</span>
+                        <div className="score-bar">
+                          <div 
+                            className="score-fill technical"
+                            style={{ width: `${Math.min(Math.max(stock.technicalScore + 50, 0), 100)}%` }}
+                          />
+                        </div>
+                        <span className="score-value">{stock.technicalScore.toFixed(1)}</span>
+                      </div>
+                      <div className="score-item">
+                        <span className="score-label">Sentiment</span>
+                        <div className="score-bar">
+                          <div 
+                            className="score-fill sentiment"
+                            style={{ width: `${Math.min(Math.max(stock.sentimentScore + 50, 0), 100)}%` }}
+                          />
+                        </div>
+                        <span className="score-value">{stock.sentimentScore.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Collapsible Description */}
+                <div className="collapsible-section mobile-collapsible">
+                  <div 
+                    className="collapsible-header"
+                    onClick={() => toggleSection(stock.symbol, 'description')}
+                  >
+                    <span className="collapsible-title">Company Description</span>
+                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'description') ? 'expanded' : ''}`}>
+                      ▼
+                    </span>
+                  </div>
+                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'description') ? 'expanded' : ''}`}>
+                    <div className="stock-description">
+                      <p>{stock.description}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="stock-actions">
@@ -192,4 +253,4 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   );
 };
 
-export default StockScreener; 
+export default StockScreener;

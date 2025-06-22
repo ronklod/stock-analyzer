@@ -90,7 +90,7 @@
 
 .stocks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
   margin-bottom: 2rem;
 }
@@ -307,6 +307,69 @@
   color: #991b1b;
 }
 
+/* Collapsible Panel for Mobile */
+.collapsible-section {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.collapsible-icon {
+  transition: transform 0.3s ease;
+}
+
+.collapsible-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.collapsible-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  margin-top: 0;
+}
+
+.collapsible-content.expanded {
+  max-height: 500px;
+  opacity: 1;
+  margin-top: 0.75rem;
+}
+
+/* Desktop view */
+.stock-primary-metrics {
+  display: none; /* Hidden on desktop */
+}
+
+.mobile-collapsible {
+  display: none; /* Hidden on desktop */
+}
+
+/* Regular metrics and scores shown on desktop */
+.stock-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .stock-screener {
@@ -331,13 +394,43 @@
     gap: 1rem;
   }
   
-  .stock-metrics {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
   .stock-card {
     padding: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  .stock-info {
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Hide the desktop metrics/scores sections on mobile */
+  .stock-metrics:not(.collapsible-content .stock-metrics) {
+    display: none;
+  }
+  
+  .stock-scores:not(.collapsible-content .stock-scores) {
+    display: none;
+  }
+  
+  .stock-description:not(.collapsible-content .stock-description) {
+    display: none;
+  }
+  
+  /* Show primary metrics by default */
+  .stock-primary-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  /* Show mobile collapsible sections */
+  .mobile-collapsible {
+    display: block;
   }
   
   .metrics-header h3 {
@@ -348,18 +441,60 @@
 /* Small mobile devices */
 @media (max-width: 480px) {
   .screener-header h1 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
   
-  .stock-metric {
+  .find-stocks-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .stock-card {
     padding: 0.75rem;
+    border-radius: 8px;
   }
   
-  .metric-title {
+  .stock-rank {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+  }
+  
+  .stock-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .company-name {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .sector {
+    font-size: 0.8rem;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem;
+  }
+  
+  .metric-value {
     font-size: 0.9rem;
   }
   
-  .stock-chart {
-    height: 200px;
+  .stock-primary-metrics {
+    gap: 0.5rem;
+  }
+  
+  .collapsible-title {
+    font-size: 0.85rem;
+  }
+  
+  .stock-actions {
+    gap: 0.5rem;
+  }
+  
+  .analyze-button-card {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
   }
 }
