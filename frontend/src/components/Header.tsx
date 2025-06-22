@@ -105,7 +105,7 @@ const Header: React.FC = () => {
         )}
         
         {/* Desktop navigation */}
-        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, ml: 3 }}>
           <Button 
             component={RouterLink} 
             to="/" 
