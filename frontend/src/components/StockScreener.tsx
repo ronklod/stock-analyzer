@@ -50,14 +50,179 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   };
 
   const getRecommendationClass = (rec: string) => {
+    if (!rec) return '';
     return rec.replace(/\s+/g, ' ');
   };
 
-  const formatMarketCap = (marketCap: number) => {
+  const formatMarketCap = (marketCap: number | null | undefined) => {
+    if (marketCap === null || marketCap === undefined) return 'N/A';
     if (marketCap >= 1e12) return `$${(marketCap / 1e12).toFixed(2)}T`;
     if (marketCap >= 1e9) return `$${(marketCap / 1e9).toFixed(2)}B`;
     if (marketCap >= 1e6) return `$${(marketCap / 1e6).toFixed(2)}M`;
     return `$${marketCap.toFixed(0)}`;
+  };
+
+  // Safe rendering function for numeric values
+  const safeRenderNumber = (value: number | null | undefined, format: (val: number) => string) => {
+    if (value === null || value === undefined || isNaN(value)) return 'N/A';
+    try {
+      return format(value);
+    } catch (error) {
+      console.error("Error formatting number:", error);
+      return 'Error';
+    }
+  };
+
+  // Safely render a stock card
+  const renderStockCard = (stock: TopStock, index: number) => {
+    try {
+      return (
+        <div key={stock.symbol || `unknown-${index}`} className="stock-card">
+          <div className="stock-rank">#{index + 1}</div>
+          
+          <div className="stock-header">
+            <h3>{stock.symbol || 'N/A'}</h3>
+            <span className={`recommendation-badge ${getRecommendationClass(stock.recommendation || '')}`}>
+              {stock.recommendation || 'N/A'}
+            </span>
+          </div>
+
+          <div className="stock-info">
+            <p className="company-name">{stock.name || 'Unknown Company'}</p>
+            <p className="sector">{stock.sector || 'Unknown Sector'}</p>
+          </div>
+
+          {/* Primary metrics always visible */}
+          <div className="stock-primary-metrics">
+            <div className="metric">
+              <span className="metric-label">Price</span>
+              <span className="metric-value">
+                {safeRenderNumber(stock.currentPrice, (val) => `$${val.toFixed(2)}`)}
+              </span>
+            </div>
+            <div className="metric">
+              <span className="metric-label">Momentum</span>
+              <span className="metric-value" style={{
+                color: (stock.momentum20d || 0) > 0 ? '#10b981' : '#ef4444'
+              }}>
+                {safeRenderNumber(stock.momentum20d, (val) => `${val > 0 ? '+' : ''}${val.toFixed(2)}%`)}
+              </span>
+            </div>
+          </div>
+          
+          {/* Collapsible Financial Metrics */}
+          <div className="collapsible-section mobile-collapsible">
+            <div 
+              className="collapsible-header"
+              onClick={() => toggleSection(stock.symbol || `unknown-${index}`, 'metrics')}
+            >
+              <span className="collapsible-title">Financial Metrics</span>
+              <span className={`collapsible-icon ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'metrics') ? 'expanded' : ''}`}>
+                ▼
+              </span>
+            </div>
+            <div className={`collapsible-content ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'metrics') ? 'expanded' : ''}`}>
+              <div className="stock-metrics">
+                <div className="metric">
+                  <span className="metric-label">Market Cap</span>
+                  <span className="metric-value">{formatMarketCap(stock.marketCap)}</span>
+                </div>
+                <div className="metric">
+                  <span className="metric-label">P/E Ratio</span>
+                  <span className="metric-value">
+                    {safeRenderNumber(stock.peRatio, (val) => (val > 0 ? val.toFixed(2) : 'N/A'))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Collapsible Score Analysis */}
+          <div className="collapsible-section mobile-collapsible">
+            <div 
+              className="collapsible-header"
+              onClick={() => toggleSection(stock.symbol || `unknown-${index}`, 'scores')}
+            >
+              <span className="collapsible-title">Score Analysis</span>
+              <span className={`collapsible-icon ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'scores') ? 'expanded' : ''}`}>
+                ▼
+              </span>
+            </div>
+            <div className={`collapsible-content ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'scores') ? 'expanded' : ''}`}>
+              <div className="stock-scores">
+                <div className="score-item">
+                  <span className="score-label">Attractiveness</span>
+                  <div className="score-bar">
+                    <div 
+                      className="score-fill attractiveness"
+                      style={{ width: `${Math.min(Math.max(stock.attractivenessScore || 0, 0), 100)}%` }}
+                    />
+                  </div>
+                  <span className="score-value">{safeRenderNumber(stock.attractivenessScore, val => val.toFixed(1))}</span>
+                </div>
+                <div className="score-item">
+                  <span className="score-label">Technical</span>
+                  <div className="score-bar">
+                    <div 
+                      className="score-fill technical"
+                      style={{ width: `${Math.min(Math.max((stock.technicalScore || 0) + 50, 0), 100)}%` }}
+                    />
+                  </div>
+                  <span className="score-value">{safeRenderNumber(stock.technicalScore, val => val.toFixed(1))}</span>
+                </div>
+                <div className="score-item">
+                  <span className="score-label">Sentiment</span>
+                  <div className="score-bar">
+                    <div 
+                      className="score-fill sentiment"
+                      style={{ width: `${Math.min(Math.max((stock.sentimentScore || 0) + 50, 0), 100)}%` }}
+                    />
+                  </div>
+                  <span className="score-value">{safeRenderNumber(stock.sentimentScore, val => val.toFixed(1))}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Collapsible Description */}
+          <div className="collapsible-section mobile-collapsible">
+            <div 
+              className="collapsible-header"
+              onClick={() => toggleSection(stock.symbol || `unknown-${index}`, 'description')}
+            >
+              <span className="collapsible-title">Company Description</span>
+              <span className={`collapsible-icon ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'description') ? 'expanded' : ''}`}>
+                ▼
+              </span>
+            </div>
+            <div className={`collapsible-content ${isSectionExpanded(stock.symbol || `unknown-${index}`, 'description') ? 'expanded' : ''}`}>
+              <div className="stock-description">
+                <p>{stock.description || 'No description available.'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="stock-actions">
+            <WatchlistButton symbol={stock.symbol || ''} companyName={stock.name || 'Unknown'} />
+            <button 
+              className="analyze-button-card"
+              onClick={() => window.location.href = `/?ticker=${stock.symbol || ''}`}
+              disabled={!stock.symbol}
+            >
+              Detailed Analysis →
+            </button>
+          </div>
+        </div>
+      );
+    } catch (error) {
+      console.error(`Error rendering stock card for index ${index}:`, error);
+      return (
+        <div key={`error-${index}`} className="stock-card error-card">
+          <h3>Error Rendering Stock #{index + 1}</h3>
+          <p>There was a problem displaying this stock. Please try refreshing the page.</p>
+        </div>
+      );
+    }
   };
 
   const getIndexName = () => {
@@ -102,149 +267,23 @@ const StockScreener: React.FC<Props> = ({ type }) => {
       {results && (
         <div className="screening-results">
           <div className="results-summary">
-            <h2>Top 10 Most Attractive {getIndexName()} Stocks</h2>
-            <p>Successfully analyzed {results.totalAnalyzed} stocks</p>
+            <h2>Top {results.topStocks?.length || 0} Most Attractive {getIndexName()} Stocks</h2>
+            <p>Successfully analyzed {results.totalAnalyzed || 0} stocks</p>
           </div>
 
           <div className="stocks-grid">
-            {results.topStocks.map((stock, index) => (
-              <div key={stock.symbol} className="stock-card">
-                <div className="stock-rank">#{index + 1}</div>
-                
-                <div className="stock-header">
-                  <h3>{stock.symbol}</h3>
-                  <span className={`recommendation-badge ${getRecommendationClass(stock.recommendation)}`}>
-                    {stock.recommendation}
-                  </span>
-                </div>
-
-                <div className="stock-info">
-                  <p className="company-name">{stock.name}</p>
-                  <p className="sector">{stock.sector}</p>
-                </div>
-
-                {/* Primary metrics always visible */}
-                <div className="stock-primary-metrics">
-                  <div className="metric">
-                    <span className="metric-label">Price</span>
-                    <span className="metric-value">${stock.currentPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="metric">
-                    <span className="metric-label">Momentum</span>
-                    <span className="metric-value" style={{
-                      color: stock.momentum20d > 0 ? '#10b981' : '#ef4444'
-                    }}>
-                      {stock.momentum20d > 0 ? '+' : ''}{stock.momentum20d.toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Collapsible Financial Metrics */}
-                <div className="collapsible-section mobile-collapsible">
-                  <div 
-                    className="collapsible-header"
-                    onClick={() => toggleSection(stock.symbol, 'metrics')}
-                  >
-                    <span className="collapsible-title">Financial Metrics</span>
-                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'metrics') ? 'expanded' : ''}`}>
-                      ▼
-                    </span>
-                  </div>
-                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'metrics') ? 'expanded' : ''}`}>
-                    <div className="stock-metrics">
-                      <div className="metric">
-                        <span className="metric-label">Market Cap</span>
-                        <span className="metric-value">{formatMarketCap(stock.marketCap)}</span>
-                      </div>
-                      <div className="metric">
-                        <span className="metric-label">P/E Ratio</span>
-                        <span className="metric-value">{stock.peRatio > 0 ? stock.peRatio.toFixed(2) : 'N/A'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Score Analysis */}
-                <div className="collapsible-section mobile-collapsible">
-                  <div 
-                    className="collapsible-header"
-                    onClick={() => toggleSection(stock.symbol, 'scores')}
-                  >
-                    <span className="collapsible-title">Score Analysis</span>
-                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'scores') ? 'expanded' : ''}`}>
-                      ▼
-                    </span>
-                  </div>
-                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'scores') ? 'expanded' : ''}`}>
-                    <div className="stock-scores">
-                      <div className="score-item">
-                        <span className="score-label">Attractiveness</span>
-                        <div className="score-bar">
-                          <div 
-                            className="score-fill attractiveness"
-                            style={{ width: `${Math.min(Math.max(stock.attractivenessScore, 0), 100)}%` }}
-                          />
-                        </div>
-                        <span className="score-value">{stock.attractivenessScore.toFixed(1)}</span>
-                      </div>
-                      <div className="score-item">
-                        <span className="score-label">Technical</span>
-                        <div className="score-bar">
-                          <div 
-                            className="score-fill technical"
-                            style={{ width: `${Math.min(Math.max(stock.technicalScore + 50, 0), 100)}%` }}
-                          />
-                        </div>
-                        <span className="score-value">{stock.technicalScore.toFixed(1)}</span>
-                      </div>
-                      <div className="score-item">
-                        <span className="score-label">Sentiment</span>
-                        <div className="score-bar">
-                          <div 
-                            className="score-fill sentiment"
-                            style={{ width: `${Math.min(Math.max(stock.sentimentScore + 50, 0), 100)}%` }}
-                          />
-                        </div>
-                        <span className="score-value">{stock.sentimentScore.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Description */}
-                <div className="collapsible-section mobile-collapsible">
-                  <div 
-                    className="collapsible-header"
-                    onClick={() => toggleSection(stock.symbol, 'description')}
-                  >
-                    <span className="collapsible-title">Company Description</span>
-                    <span className={`collapsible-icon ${isSectionExpanded(stock.symbol, 'description') ? 'expanded' : ''}`}>
-                      ▼
-                    </span>
-                  </div>
-                  <div className={`collapsible-content ${isSectionExpanded(stock.symbol, 'description') ? 'expanded' : ''}`}>
-                    <div className="stock-description">
-                      <p>{stock.description}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="stock-actions">
-                  <WatchlistButton symbol={stock.symbol} companyName={stock.name} />
-                  <button 
-                    className="analyze-button-card"
-                    onClick={() => window.location.href = `/?ticker=${stock.symbol}`}
-                  >
-                    Detailed Analysis →
-                  </button>
-                </div>
-              </div>
-            ))}
+            {results.topStocks && results.topStocks.length > 0 ? 
+              results.topStocks.map((stock, index) => renderStockCard(stock, index)) : 
+              <div className="no-results">No stocks met the screening criteria</div>
+            }
           </div>
 
-          {results.failedSymbols.length > 0 && (
+          {results.failedSymbols && results.failedSymbols.length > 0 && (
             <div className="failed-symbols">
               <p>Failed to analyze: {results.failedSymbols.join(', ')}</p>
+              {results.failedSymbols.length > 10 && 
+                <p className="warning-note">A high number of analysis failures may indicate an API rate limit or service issue.</p>
+              }
             </div>
           )}
         </div>

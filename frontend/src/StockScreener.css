@@ -307,6 +307,42 @@
   color: #991b1b;
 }
 
+.failed-symbols .warning-note {
+  margin-top: 10px;
+  font-style: italic;
+  color: #b45309;
+}
+
+/* Error and No Results States */
+.error-card {
+  background-color: #fee2e2;
+  border: 1px solid #f87171;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 150px;
+}
+
+.error-card h3 {
+  color: #b91c1c;
+}
+
+.error-card p {
+  color: #7f1d1d;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  color: #4b5563;
+  font-size: 1.25rem;
+  border: 1px dashed #d1d5db;
+}
+
 /* Collapsible Panel for Mobile */
 .collapsible-section {
   border-top: 1px solid #e5e7eb;
@@ -497,4 +533,15 @@
     font-size: 0.85rem;
     border-radius: 6px;
   }
+}
+
+.error-message {
+  padding: 1rem;
+  margin: 2rem auto;
+  max-width: 800px;
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  color: #b91c1c;
+  text-align: center;
 }
