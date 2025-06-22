@@ -98,6 +98,15 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({ symbol, companyName }
                     onClick={isInWatchlist ? handleRemoveFromWatchlist : handleAddToWatchlist}
                     startIcon={isInWatchlist ? <StarIcon /> : <StarBorderIcon />}
                     size="small"
+                    className="watchlist-button"
+                    sx={{
+                        borderColor: isInWatchlist ? undefined : 'rgba(255, 255, 255, 0.5)',
+                        color: isInWatchlist ? undefined : 'inherit',
+                        '&:hover': {
+                            borderColor: isInWatchlist ? undefined : 'rgba(255, 255, 255, 0.8)',
+                            backgroundColor: isInWatchlist ? undefined : 'rgba(255, 255, 255, 0.05)'
+                        }
+                    }}
                 >
                     {isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                 </Button>

@@ -110,7 +110,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
             </div>
           </div>
           
-          {/* Collapsible Financial Metrics */}
+          {/* Collapsible Financial Metrics - Mobile Only */}
           <div className="collapsible-section mobile-collapsible">
             <div 
               className="collapsible-header"
@@ -200,6 +200,71 @@ const StockScreener: React.FC<Props> = ({ type }) => {
                 <p>{stock.description || 'No description available.'}</p>
               </div>
             </div>
+          </div>
+
+          {/* Desktop sections - CSS classes ensure these are only visible on desktop */}
+          <div className="stock-metrics desktop-only-section">
+            <div className="metric">
+              <span className="metric-label">Price</span>
+              <span className="metric-value">
+                {safeRenderNumber(stock.currentPrice, (val) => `$${val.toFixed(2)}`)}
+              </span>
+            </div>
+            <div className="metric">
+              <span className="metric-label">Market Cap</span>
+              <span className="metric-value">{formatMarketCap(stock.marketCap)}</span>
+            </div>
+            <div className="metric">
+              <span className="metric-label">P/E Ratio</span>
+              <span className="metric-value">
+                {safeRenderNumber(stock.peRatio, (val) => (val > 0 ? val.toFixed(2) : 'N/A'))}
+              </span>
+            </div>
+            <div className="metric">
+              <span className="metric-label">20D Momentum</span>
+              <span className="metric-value" style={{
+                color: (stock.momentum20d || 0) > 0 ? '#10b981' : '#ef4444'
+              }}>
+                {safeRenderNumber(stock.momentum20d, (val) => `${val > 0 ? '+' : ''}${val.toFixed(2)}%`)}
+              </span>
+            </div>
+          </div>
+          
+          <div className="stock-scores desktop-only-section">
+            <div className="score-item">
+              <span className="score-label">Attractiveness</span>
+              <div className="score-bar">
+                <div 
+                  className="score-fill attractiveness"
+                  style={{ width: `${Math.min(Math.max(stock.attractivenessScore || 0, 0), 100)}%` }}
+                />
+              </div>
+              <span className="score-value">{safeRenderNumber(stock.attractivenessScore, val => val.toFixed(1))}</span>
+            </div>
+            <div className="score-item">
+              <span className="score-label">Technical</span>
+              <div className="score-bar">
+                <div 
+                  className="score-fill technical"
+                  style={{ width: `${Math.min(Math.max((stock.technicalScore || 0) + 50, 0), 100)}%` }}
+                />
+              </div>
+              <span className="score-value">{safeRenderNumber(stock.technicalScore, val => val.toFixed(1))}</span>
+            </div>
+            <div className="score-item">
+              <span className="score-label">Sentiment</span>
+              <div className="score-bar">
+                <div 
+                  className="score-fill sentiment"
+                  style={{ width: `${Math.min(Math.max((stock.sentimentScore || 0) + 50, 0), 100)}%` }}
+                />
+              </div>
+              <span className="score-value">{safeRenderNumber(stock.sentimentScore, val => val.toFixed(1))}</span>
+            </div>
+          </div>
+          
+          <div className="stock-description desktop-only-section">
+            <p>{stock.description || 'No description available.'}</p>
           </div>
 
           <div className="stock-actions">

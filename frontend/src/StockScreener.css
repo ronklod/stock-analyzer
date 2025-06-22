@@ -386,17 +386,43 @@
   margin-top: 0.75rem;
 }
 
-/* Desktop view */
+/* Desktop view - hide mobile-specific elements */
 .stock-primary-metrics {
-  display: none; /* Hidden on desktop */
+  display: none; /* Hidden on desktop by default */
 }
 
 .mobile-collapsible {
-  display: none; /* Hidden on desktop */
+  display: none; /* Hidden on desktop by default */
+}
+
+/* Base styles for metrics, scores and description - will be overridden by media queries */
+.stock-metrics {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stock-scores {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stock-description {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
 }
 
 /* Regular metrics and scores shown on desktop */
-.stock-metrics {
+.stock-metrics.desktop-only-section {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
@@ -404,6 +430,35 @@
   padding: 1rem;
   background-color: #f8f9fa;
   border-radius: 8px;
+}
+
+/* Hide desktop-only sections by default - they'll be shown only on desktop in media query */
+.desktop-only-section {
+  display: none;
+}
+
+/* Media query for desktop - show desktop sections, hide mobile sections */
+@media (min-width: 769px) {
+  /* Show desktop sections */
+  .desktop-only-section {
+    display: block !important;
+  }
+  
+  .stock-metrics.desktop-only-section {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stock-scores.desktop-only-section {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Hide mobile sections */
+  .mobile-collapsible,
+  .stock-primary-metrics {
+    display: none !important;
+  }
 }
 
 /* Responsive Design */
@@ -440,20 +495,33 @@
     margin-bottom: 0.75rem;
   }
   
-  /* Hide the desktop metrics/scores sections on mobile */
-  .stock-metrics:not(.collapsible-content .stock-metrics) {
+  /* Hide desktop-only sections on mobile */
+  .desktop-only-section {
+    display: none !important;
+  }
+  
+  /* On mobile, hide all metrics, scores and descriptions by default */
+  .stock-metrics,
+  .stock-scores,
+  .stock-description {
     display: none;
   }
   
-  .stock-scores:not(.collapsible-content .stock-scores) {
-    display: none;
+  /* Show these elements only inside collapsible content on mobile */
+  .collapsible-content .stock-metrics {
+    display: block !important;
   }
   
-  .stock-description:not(.collapsible-content .stock-description) {
-    display: none;
+  .collapsible-content .stock-scores {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
   }
   
-  /* Show primary metrics by default */
+  .collapsible-content .stock-description {
+    display: block !important;
+  }
+  
+  /* Show primary metrics by default on mobile */
   .stock-primary-metrics {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -544,4 +612,36 @@
   border-radius: 8px;
   color: #b91c1c;
   text-align: center;
+}
+
+/* Watchlist Button Styling */
+.watchlist-button.MuiButton-outlined {
+  border-color: rgba(25, 118, 210, 0.5);
+  color: var(--primary-color);
+}
+
+.watchlist-button.MuiButton-root {
+  text-transform: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+/* Dark mode watchlist button */
+body.dark .watchlist-button.MuiButton-outlined:not(.MuiButton-outlinedPrimary) {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+body.dark .watchlist-button.MuiButton-outlined:not(.MuiButton-outlinedPrimary):hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .watchlist-button.MuiButton-root {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
 }
