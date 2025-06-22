@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TopStock, ScreeningResponse } from '../types';
 import WatchlistButton from './WatchlistButton';
 import { useApi } from '../utils/apiClient';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   type: 'nasdaq100' | 'sp500' | 'mag7';
@@ -13,6 +14,8 @@ const StockScreener: React.FC<Props> = ({ type }) => {
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const api = useApi();
+  const { theme } = useTheme(); // Get current theme from context
+  const isDarkTheme = theme === 'dark'; 
 
   // Clear results when type changes
   useEffect(() => {
@@ -296,9 +299,9 @@ const StockScreener: React.FC<Props> = ({ type }) => {
 
   return (
     <div className="stock-screener">
-      <div className="screener-header">
-        <h1>{getIndexName()} Stock Screener</h1>
-        <p>Find the most attractive stocks from the {getIndexName()} index based on technical and sentiment analysis</p>
+      <div className="screener-header" >
+        <h1 style={{  color : isDarkTheme ? '#fff' : '#666' }}>{getIndexName()} Stock Screener</h1>
+        <p style={{  color : isDarkTheme ? '#fff' : '#666' }}>Find the most attractive stocks from the {getIndexName()} index based on technical and sentiment analysis</p>
       </div>
 
       <div className="screener-controls">
@@ -317,7 +320,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
           )}
         </button>
         {loading && (
-          <p className="loading-note">
+          <p className="loading-note" style={{  color : isDarkTheme ? '#f5f3f2' : '#666' }}>
             This may take {type === 'nasdaq100' ? '2-3' : type === 'sp500' ? '4-5' : '1'} {type === 'mag7' ? 'minute' : 'minutes'} as we analyze all {type === 'nasdaq100' ? '100' : type === 'sp500' ? '500' : '7'} stocks...
           </p>
         )}
@@ -332,14 +335,14 @@ const StockScreener: React.FC<Props> = ({ type }) => {
       {results && (
         <div className="screening-results">
           <div className="results-summary">
-            <h2>Top {results.topStocks?.length || 0} Most Attractive {getIndexName()} Stocks</h2>
-            <p>Successfully analyzed {results.totalAnalyzed || 0} stocks</p>
+            <h2 className="loading-note" style={{  color : isDarkTheme ? '#f5f3f2' : '#666' }}>Top {results.topStocks?.length || 0} Most Attractive {getIndexName()} Stocks</h2>
+            <p className="loading-note" style={{  color : isDarkTheme ? '#f5f3f2' : '#666' }}>Successfully analyzed {results.totalAnalyzed || 0} stocks</p>
           </div>
 
           <div className="stocks-grid">
             {results.topStocks && results.topStocks.length > 0 ? 
               results.topStocks.map((stock, index) => renderStockCard(stock, index)) : 
-              <div className="no-results">No stocks met the screening criteria</div>
+              <div className="no-results" >No stocks met the screening criteria</div>
             }
           </div>
 
