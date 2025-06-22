@@ -30,6 +30,8 @@ class Token(BaseModel):
     user_id: int
     email: str
     display_name: Optional[str] = None
+    is_admin: bool = False
+    is_active: bool = True
 
 class TokenData(BaseModel):
     email: Optional[str] = None
@@ -45,6 +47,8 @@ class UserResponse(BaseModel):
     email: str
     display_name: Optional[str] = None
     created_at: datetime
+    is_active: bool = True
+    is_admin: bool = False
     
     class Config:
         from_attributes = True
@@ -144,3 +148,19 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
     if user is None:
         raise credentials_exception
     return user
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Inactive user"
+        )
+    return current_user
+
+async def get_current_admin_user(current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. Admin privileges required."
+        )
+    return current_user

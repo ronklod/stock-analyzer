@@ -199,6 +199,15 @@ const Header: React.FC = () => {
                 >
                   Profile
                 </MenuItem>
+                {user?.isAdmin && (
+                  <MenuItem
+                    onClick={handleCloseUserMenu}
+                    component={RouterLink}
+                    to="/admin"
+                  >
+                    Admin Dashboard
+                  </MenuItem>
+                )}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </Box>

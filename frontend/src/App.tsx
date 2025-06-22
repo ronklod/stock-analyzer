@@ -21,8 +21,10 @@ import './theme.css'; // Import theme styles
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import AdminRoute from './components/AdminRoute';
 import { useTheme } from './context/ThemeContext';
 
 function StockAnalyzer() {
@@ -182,6 +184,11 @@ function App() {
                   {/* User profile and watchlist */}
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/watchlist" element={<WatchlistPage />} />
+                </Route>
+                
+                {/* Admin routes */}
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<AdminPage />} />
                 </Route>
               </Routes>
             </main>

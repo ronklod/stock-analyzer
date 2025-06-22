@@ -32,11 +32,12 @@ import pandas as pd
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from auth import (
-    authenticate_user, create_access_token, get_current_user, UserCreate, 
+    authenticate_user, create_access_token, get_current_user, get_current_admin_user, UserCreate, 
     Token, UserResponse, create_user, get_user, create_or_update_google_user,
     GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, ACCESS_TOKEN_EXPIRE_MINUTES,
     get_password_hash, verify_password
 )
+from admin_routes import router as admin_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +54,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include admin router
+app.include_router(admin_router)
 
 # Directory where the React build will be located
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend/build")
@@ -721,7 +725,9 @@ async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
         token_type="bearer", 
         user_id=user.id,
         email=user.email, 
-        display_name=user.display_name
+        display_name=user.display_name,
+        is_admin=user.is_admin,
+        is_active=user.is_active
     )
 
 @app.post("/api/auth/token", response_model=Token)
@@ -756,7 +762,9 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         token_type="bearer", 
         user_id=user.id,
         email=user.email, 
-        display_name=user.display_name
+        display_name=user.display_name,
+        is_admin=user.is_admin,
+        is_active=user.is_active
     )
 
 @app.get("/api/auth/me", response_model=UserResponse)
@@ -816,7 +824,7 @@ async def google_callback(code: str, state: str, db: Session = Depends(get_db)):
         
         # Create a redirect URL with the token for the frontend
         frontend_url = "/"
-        redirect_url = f"{frontend_url}?token={access_token}&userId={user.id}&email={user.email}&displayName={user.display_name or ''}"
+        redirect_url = f"{frontend_url}?token={access_token}&userId={user.id}&email={user.email}&displayName={user.display_name or ''}&isAdmin={str(user.is_admin).lower()}&isActive={str(user.is_active).lower()}"
         
         return RedirectResponse(url=redirect_url)
         

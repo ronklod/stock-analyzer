@@ -11,7 +11,14 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  isAuthenticated: boolean;
+  isAut      // Update user in state and localStorage
+      if (user) {
+        const updatedUser: User = {
+          ...user,
+          displayName: responseData.display_name
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));ed: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName?: string) => Promise<void>;
@@ -69,17 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const urlUserId = params.get('userId');
     const urlEmail = params.get('email');
     const urlDisplayName = params.get('displayName');
-    const urlIsAdmin = params.get('isAdmin');
-    const urlIsActive = params.get('isActive');
     
     // If token is in URL (from OAuth redirect), save it
     if (urlToken && urlUserId && urlEmail) {
-      const userData: User = {
+      const userData = {
         id: parseInt(urlUserId),
         email: urlEmail,
         displayName: urlDisplayName || urlEmail.split('@')[0],
-        isAdmin: urlIsAdmin === 'true',
-        isActive: urlIsActive !== 'false'
+        isAdmin: false, // Default to false, will be updated from API
+        isActive: true  // Default to true for new logins
       };
       
       localStorage.setItem('token', urlToken);
@@ -164,9 +169,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Get full user data including admin status
-      fetchUserData(data.access_token);
-      
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -238,7 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const changePassword = async (currentPassword: string, newPassword: string) => {
     try {
       setIsLoading(true);
-      
+
       const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
@@ -248,17 +250,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({
           current_password: currentPassword,
           new_password: newPassword
-        })
+        }),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Password change failed');
       }
-      
+
       return await response.json();
     } catch (error) {
-      console.error('Change password error:', error);
+      console.error('Password change error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -277,7 +279,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         body: JSON.stringify({
           display_name: displayName
-        })
+        }),
       });
       
       if (!response.ok) {
@@ -285,21 +287,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(errorData.detail || 'Profile update failed');
       }
       
-      const responseData = await response.json();
-      
       // Update user in state and localStorage
       if (user) {
-        const updatedUser: User = {
+        const updatedUser = {
           ...user,
-          displayName: responseData.display_name
+          displayName: displayName
         };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
       }
       
-      return responseData;
+      return await response.json();
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error('Profile update error:', error);
       throw error;
     } finally {
       setIsLoading(false);

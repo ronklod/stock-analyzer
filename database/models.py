@@ -17,6 +17,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String, nullable=True)  # Nullable for Google Auth users
     is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)  # New field for admin users
     google_id = Column(String, nullable=True, unique=True)  # For Google OAuth
     display_name = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
