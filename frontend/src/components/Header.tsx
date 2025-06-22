@@ -314,6 +314,18 @@ const Header: React.FC = () => {
               >
                 Profile
               </MenuItem>,
+              // Add Admin Dashboard menu item for admin users only
+              ...(user?.isAdmin ? [
+                <MenuItem 
+                  key="admin" 
+                  onClick={handleCloseMobileMenu}
+                  component={RouterLink}
+                  to="/admin"
+                  sx={{ py: 1.5 }}
+                >
+                  Admin Dashboard
+                </MenuItem>
+              ] : []),
               <MenuItem 
                 key="logout" 
                 onClick={() => {
