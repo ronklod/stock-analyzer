@@ -366,6 +366,7 @@
 
 .collapsible-icon {
   transition: transform 0.3s ease;
+  color:gray;
 }
 
 .collapsible-icon.expanded {
