@@ -243,7 +243,7 @@ const Header: React.FC = () => {
           {theme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
         
-        {/* Mobile menu */}
+        {/* Mobile menu with grouped items */}
         <Menu
           id="mobile-menu"
           anchorEl={mobileMenuAnchor}
@@ -254,130 +254,340 @@ const Header: React.FC = () => {
           keepMounted
           open={Boolean(mobileMenuAnchor)}
           onClose={handleCloseMobileMenu}
+          PaperProps={{
+            style: {
+              backgroundColor: theme === 'dark' ? '#1a1a2e' : '#ffffff',
+              color: theme === 'dark' ? '#ffffff' : 'inherit'
+            }
+          }}
           sx={{ 
             '& .MuiPaper-root': { 
               width: '100%', 
               maxWidth: '300px',
-              mt: 1.5 
+              mt: 1.5,
+              overflowY: 'auto',
+              maxHeight: '80vh',
+              borderRadius: '12px',
+              bgcolor: theme === 'dark' ? '#1a1a2e' : '#ffffff',
+              boxShadow: theme === 'dark' 
+                ? '0 8px 16px rgba(0, 0, 0, 0.5)' 
+                : '0 8px 16px rgba(0, 0, 0, 0.1)',
+              color: theme === 'dark' ? '#ffffff' : 'inherit' // Ensure text is white in dark mode
+            },
+            '& .MuiMenuItem-root': {
+              borderRadius: '8px',
+              mx: 1,
+              my: 0.5,
+              transition: 'all 0.2s ease',
+              color: theme === 'dark' ? '#ffffff' : 'inherit' // Ensure menu item text is white in dark mode
+            },
+            '& .MuiTypography-root': {
+              color: theme === 'dark' ? '#ffffff' : 'inherit' // Ensure all Typography is white in dark mode
+            },
+            '& .MuiMenuItem-root:hover': {
+              bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
             } 
           }}
         >
-          <MenuItem 
-            onClick={handleCloseMobileMenu} 
-            component={RouterLink} 
-            to="/"
-            sx={{ py: 1.5 }} // Larger touch target area
-          >
-            Analyzer
-          </MenuItem>
-          <MenuItem 
-            onClick={handleCloseMobileMenu} 
-            component={RouterLink} 
-            to="/screener/nasdaq100"
-            sx={{ py: 1.5 }}
-          >
-            NASDAQ-100 Screener
-          </MenuItem>
-          <MenuItem 
-            onClick={handleCloseMobileMenu} 
-            component={RouterLink} 
-            to="/screener/sp500"
-            sx={{ py: 1.5 }}
-          >
-            S&P 500 Screener
-          </MenuItem>
-          <MenuItem 
-            onClick={handleCloseMobileMenu} 
-            component={RouterLink} 
-            to="/screener/mag7"
-            sx={{ py: 1.5 }}
-          >
-            MAG7 Screener
-          </MenuItem>
-          <MenuItem 
-            onClick={handleCloseMobileMenu} 
-            component={RouterLink} 
-            to="/watchlist"
-            sx={{ py: 1.5 }}
-          >
-            Watchlist
-          </MenuItem>
+          {/* Group 1: Analysis tools */}
+          <Box sx={{ 
+            pt: 1, 
+            pb: 1,
+            borderBottom: '1px solid',
+            borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+          }}>
+            <Typography variant="overline" sx={{ 
+              display: 'block',
+              color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+              px: 2, 
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              mb: 0.5 
+            }}>
+              Analysis Tools
+            </Typography>
+            
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/"
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <TrendingUpIcon fontSize="small" sx={{ mr: 1.5 }} />
+                Analyzer
+              </Box>
+            </MenuItem>
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/screener/nasdaq100"
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <span role="img" aria-label="nasdaq" style={{ marginRight: '12px' }}>📊</span>
+                NASDAQ-100 Screener
+              </Box>
+            </MenuItem>
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/screener/sp500"
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <span role="img" aria-label="sp500" style={{ marginRight: '12px' }}>📈</span>
+                S&P 500 Screener
+              </Box>
+            </MenuItem>
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/screener/mag7"
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <span role="img" aria-label="mag7" style={{ marginRight: '12px' }}>🔍</span>
+                MAG7 Screener
+              </Box>
+            </MenuItem>
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/watchlist"
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <span role="img" aria-label="watchlist" style={{ marginRight: '12px' }}>⭐</span>
+                Watchlist
+              </Box>
+            </MenuItem>
+          </Box>
           
-          {isAuthenticated ? (
-            [
+          {/* Group 2: User account (when authenticated) */}
+          {isAuthenticated && (
+            <Box sx={{ 
+              pt: 1, 
+              pb: 1,
+              borderBottom: '1px solid',
+              borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+            }}>
+              {/* User info box */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                px: 2,
+                py: 1,
+                mb: 1 
+              }}>
+                <Avatar sx={{ 
+                  bgcolor: 'secondary.main',
+                  width: 40,
+                  height: 40
+                }}>
+                  {user && (user.displayName || user.email || '?')[0].toUpperCase()}
+                </Avatar>
+                <Box sx={{ ml: 2 }}>
+                  <Typography variant="subtitle1" sx={{ 
+                    fontWeight: 'bold',
+                    color: theme === 'dark' ? '#ffffff' : 'inherit'
+                  }}>
+                    {user ? (user.displayName || (user.email ? user.email.split('@')[0] : 'User')) : 'User'}
+                  </Typography>
+                  <Typography variant="caption" sx={{
+                    color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                  }}>
+                    {user?.email}
+                  </Typography>
+                </Box>
+              </Box>
+            
+              <Typography variant="overline" sx={{ 
+                display: 'block',
+                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                px: 2, 
+                fontSize: '0.7rem',
+                fontWeight: 'bold',
+                mb: 0.5 
+              }}>
+                Account
+              </Typography>
+              
               <MenuItem 
-                key="profile" 
                 onClick={handleCloseMobileMenu}
                 component={RouterLink}
                 to="/profile"
                 sx={{ py: 1.5 }}
               >
-                Profile
-              </MenuItem>,
-              // Add Admin Dashboard menu item for admin users only
-              ...(user?.isAdmin ? [
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  color: theme === 'dark' ? '#ffffff' : 'inherit' 
+                }}>
+                  <AccountCircleIcon fontSize="small" sx={{ mr: 1.5 }} />
+                  Profile
+                </Box>
+              </MenuItem>
+              
+              {user?.isAdmin && (
                 <MenuItem 
-                  key="admin" 
                   onClick={handleCloseMobileMenu}
                   component={RouterLink}
                   to="/admin"
                   sx={{ py: 1.5 }}
                 >
-                  Admin Dashboard
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    color: theme === 'dark' ? '#ffb74d' : '#f57c00' // Orange color for admin items
+                  }}>
+                    <span role="img" aria-label="admin" style={{ marginRight: '12px' }}>⚙️</span>
+                    Admin Dashboard
+                  </Box>
                 </MenuItem>
-              ] : []),
-              <MenuItem 
-                key="logout" 
-                onClick={() => {
-                  handleCloseMobileMenu();
-                  logout();
-                }}
-                sx={{ py: 1.5 }}
-              >
-                Logout
-              </MenuItem>,
-              <MenuItem 
-                key="theme" 
+              )}
+            </Box>
+          )}
+          
+          {/* Group 3: Bottom actions */}
+          <Box sx={{ 
+            pt: 1, 
+            mt: 'auto',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Bottom action area with theme toggle and logout/auth buttons */}
+            <Box sx={{ 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderTop: '1px solid',
+              borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+              mt: 1,
+              pt: 1,
+              px: 2
+            }}>
+              {/* Theme Toggle */}
+              <Box
                 onClick={() => {
                   toggleTheme();
                   handleCloseMobileMenu();
                 }}
-                sx={{ py: 1.5 }}
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  py: 1.5,
+                  cursor: 'pointer',
+                  borderRadius: 1,
+                  px: 1.5,
+                  '&:hover': {
+                    bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+                  }
+                }}
               >
                 {theme === 'dark' ? 
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', color: '#ffffff' }}>
                     <LightModeIcon fontSize="small" sx={{ mr: 1 }} />
-                    Light Mode
+                    <Typography variant="body2" sx={{ color: '#ffffff' }}>Light</Typography>
                   </Box> : 
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <DarkModeIcon fontSize="small" sx={{ mr: 1 }} />
-                    Dark Mode
+                    <Typography variant="body2">Dark</Typography>
                   </Box>
                 }
-              </MenuItem>
-            ]
-          ) : (
-            [
-              <MenuItem 
-                key="login"
-                onClick={handleCloseMobileMenu}
-                component={RouterLink}
-                to="/login"
-                sx={{ py: 1.5 }}
-              >
-                Login
-              </MenuItem>,
-              <MenuItem 
-                key="register"
-                onClick={handleCloseMobileMenu}
-                component={RouterLink}
-                to="/register"
-                sx={{ py: 1.5 }}
-              >
-                Sign Up
-              </MenuItem>
-            ]
-          )}
+              </Box>
+              
+              {/* Auth buttons */}
+              {isAuthenticated ? (
+                <Box
+                  onClick={() => {
+                    handleCloseMobileMenu();
+                    logout();
+                  }}
+                  sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    py: 1.5,
+                    px: 2,
+                    bgcolor: theme === 'dark' ? '#f44336' : '#d32f2f',
+                    color: '#ffffff',
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: theme === 'dark' ? '#d32f2f' : '#c62828',
+                    }
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                    Logout
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 1
+                }}>
+                  <Box 
+                    component={RouterLink} 
+                    to="/login"
+                    onClick={handleCloseMobileMenu}
+                    sx={{ 
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      py: 1.5,
+                      px: 2,
+                      borderRadius: 1,
+                      '&:hover': {
+                        bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+                      }
+                    }}
+                  >
+                    <Typography variant="body2">Login</Typography>
+                  </Box>
+                  <Box 
+                    component={RouterLink} 
+                    to="/register"
+                    onClick={handleCloseMobileMenu}
+                    sx={{ 
+                      textDecoration: 'none',
+                      py: 1.5,
+                      px: 2,
+                      bgcolor: theme === 'dark' ? '#1976d2' : '#2196f3',
+                      color: '#ffffff',
+                      borderRadius: 1,
+                      '&:hover': {
+                        bgcolor: theme === 'dark' ? '#1565c0' : '#1976d2',
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                      Sign Up
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </Box>
         </Menu>
       </Toolbar>
     </AppBar>
