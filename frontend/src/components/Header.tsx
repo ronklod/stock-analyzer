@@ -27,6 +27,13 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
+// Add global styles for compact menu items
+const compactMenuItemStyle = {
+  py: 0.5, // Further reduced vertical padding
+  minHeight: '32px', // Explicit minimum height
+  px: 1.5 // Add horizontal padding for consistency
+};
+
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -257,16 +264,17 @@ const Header: React.FC = () => {
           PaperProps={{
             style: {
               backgroundColor: theme === 'dark' ? '#1a1a2e' : '#ffffff',
-              color: theme === 'dark' ? '#ffffff' : 'inherit'
+              color: theme === 'dark' ? '#ffffff' : 'inherit',
+              padding: '4px 0' // Reduce internal padding
             }
           }}
           sx={{ 
             '& .MuiPaper-root': { 
               width: '100%', 
-              maxWidth: '300px',
-              mt: 1.5,
+              maxWidth: '290px',
+              mt: 1,
               overflowY: 'auto',
-              maxHeight: '80vh',
+              maxHeight: '75vh',
               borderRadius: '12px',
               bgcolor: theme === 'dark' ? '#1a1a2e' : '#ffffff',
               boxShadow: theme === 'dark' 
@@ -277,12 +285,14 @@ const Header: React.FC = () => {
             '& .MuiMenuItem-root': {
               borderRadius: '8px',
               mx: 1,
-              my: 0.5,
+              my: 0.25, // Reduced vertical margin
               transition: 'all 0.2s ease',
-              color: theme === 'dark' ? '#ffffff' : 'inherit' // Ensure menu item text is white in dark mode
+              color: theme === 'dark' ? '#ffffff' : 'inherit', // Ensure menu item text is white in dark mode
+              minHeight: '32px' // Set minimum height for all menu items
             },
             '& .MuiTypography-root': {
-              color: theme === 'dark' ? '#ffffff' : 'inherit' // Ensure all Typography is white in dark mode
+              color: theme === 'dark' ? '#ffffff' : 'inherit', // Ensure all Typography is white in dark mode
+              lineHeight: 1.2 // Tighten line height for all text
             },
             '& .MuiMenuItem-root:hover': {
               bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
@@ -291,8 +301,8 @@ const Header: React.FC = () => {
         >
           {/* Group 1: Analysis tools */}
           <Box sx={{ 
-            pt: 1, 
-            pb: 1,
+            pt: 0.25, 
+            pb: 0.25,
             borderBottom: '1px solid',
             borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
           }}>
@@ -300,9 +310,10 @@ const Header: React.FC = () => {
               display: 'block',
               color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
               px: 2, 
-              fontSize: '0.7rem',
+              fontSize: '0.65rem',
               fontWeight: 'bold',
-              mb: 0.5 
+              mb: 0,
+              lineHeight: 1.2
             }}>
               Analysis Tools
             </Typography>
@@ -311,7 +322,7 @@ const Header: React.FC = () => {
               onClick={handleCloseMobileMenu} 
               component={RouterLink} 
               to="/"
-              sx={{ py: 1.5 }}
+              sx={compactMenuItemStyle}
             >
               <Box sx={{ 
                 display: 'flex', 
@@ -326,7 +337,7 @@ const Header: React.FC = () => {
               onClick={handleCloseMobileMenu} 
               component={RouterLink} 
               to="/screener/nasdaq100"
-              sx={{ py: 1.5 }}
+              sx={compactMenuItemStyle}
             >
               <Box sx={{ 
                 display: 'flex', 
@@ -341,7 +352,7 @@ const Header: React.FC = () => {
               onClick={handleCloseMobileMenu} 
               component={RouterLink} 
               to="/screener/sp500"
-              sx={{ py: 1.5 }}
+              sx={compactMenuItemStyle}
             >
               <Box sx={{ 
                 display: 'flex', 
@@ -356,7 +367,7 @@ const Header: React.FC = () => {
               onClick={handleCloseMobileMenu} 
               component={RouterLink} 
               to="/screener/mag7"
-              sx={{ py: 1.5 }}
+              sx={compactMenuItemStyle}
             >
               <Box sx={{ 
                 display: 'flex', 
@@ -371,7 +382,7 @@ const Header: React.FC = () => {
               onClick={handleCloseMobileMenu} 
               component={RouterLink} 
               to="/watchlist"
-              sx={{ py: 1.5 }}
+              sx={compactMenuItemStyle}
             >
               <Box sx={{ 
                 display: 'flex', 
@@ -387,8 +398,8 @@ const Header: React.FC = () => {
           {/* Group 2: User account (when authenticated) */}
           {isAuthenticated && (
             <Box sx={{ 
-              pt: 1, 
-              pb: 1,
+              pt: 0.25, 
+              pb: 0.25,
               borderBottom: '1px solid',
               borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
             }}>
@@ -397,25 +408,28 @@ const Header: React.FC = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 px: 2,
-                py: 1,
-                mb: 1 
+                py: 0.5,
+                mb: 0.5 
               }}>
                 <Avatar sx={{ 
                   bgcolor: 'secondary.main',
-                  width: 40,
-                  height: 40
+                  width: 32,
+                  height: 32
                 }}>
                   {user && (user.displayName || user.email || '?')[0].toUpperCase()}
                 </Avatar>
-                <Box sx={{ ml: 2 }}>
-                  <Typography variant="subtitle1" sx={{ 
+                <Box sx={{ ml: 1.5 }}>
+                  <Typography variant="body2" sx={{ 
                     fontWeight: 'bold',
-                    color: theme === 'dark' ? '#ffffff' : 'inherit'
+                    color: theme === 'dark' ? '#ffffff' : 'inherit',
+                    lineHeight: 1.2
                   }}>
                     {user ? (user.displayName || (user.email ? user.email.split('@')[0] : 'User')) : 'User'}
                   </Typography>
                   <Typography variant="caption" sx={{
-                    color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                    color: theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+                    fontSize: '0.7rem',
+                    lineHeight: 1.1
                   }}>
                     {user?.email}
                   </Typography>
@@ -426,9 +440,10 @@ const Header: React.FC = () => {
                 display: 'block',
                 color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                 px: 2, 
-                fontSize: '0.7rem',
+                fontSize: '0.65rem',
                 fontWeight: 'bold',
-                mb: 0.5 
+                mb: 0,
+                lineHeight: 1.2
               }}>
                 Account
               </Typography>
@@ -437,7 +452,7 @@ const Header: React.FC = () => {
                 onClick={handleCloseMobileMenu}
                 component={RouterLink}
                 to="/profile"
-                sx={{ py: 1.5 }}
+                sx={compactMenuItemStyle}
               >
                 <Box sx={{ 
                   display: 'flex', 
@@ -454,7 +469,7 @@ const Header: React.FC = () => {
                   onClick={handleCloseMobileMenu}
                   component={RouterLink}
                   to="/admin"
-                  sx={{ py: 1.5 }}
+                  sx={compactMenuItemStyle}
                 >
                   <Box sx={{ 
                     display: 'flex', 
@@ -471,7 +486,7 @@ const Header: React.FC = () => {
           
           {/* Group 3: Bottom actions */}
           <Box sx={{ 
-            pt: 1, 
+            pt: 0.5, 
             mt: 'auto',
             display: 'flex',
             flexDirection: 'column'
@@ -483,9 +498,9 @@ const Header: React.FC = () => {
               alignItems: 'center',
               borderTop: '1px solid',
               borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-              mt: 1,
-              pt: 1,
-              px: 2
+              mt: 0.5,
+              pt: 0.5,
+              px: 1.5
             }}>
               {/* Theme Toggle */}
               <Box
@@ -496,10 +511,10 @@ const Header: React.FC = () => {
                 sx={{ 
                   display: 'flex', 
                   alignItems: 'center',
-                  py: 1.5,
+                  py: 0.75,
                   cursor: 'pointer',
                   borderRadius: 1,
-                  px: 1.5,
+                  px: 1,
                   '&:hover': {
                     bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
                   }
@@ -507,12 +522,12 @@ const Header: React.FC = () => {
               >
                 {theme === 'dark' ? 
                   <Box sx={{ display: 'flex', alignItems: 'center', color: '#ffffff' }}>
-                    <LightModeIcon fontSize="small" sx={{ mr: 1 }} />
-                    <Typography variant="body2" sx={{ color: '#ffffff' }}>Light</Typography>
+                    <LightModeIcon sx={{ mr: 0.5, fontSize: '1rem' }} />
+                    <Typography variant="caption" sx={{ color: '#ffffff' }}>Light</Typography>
                   </Box> : 
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <DarkModeIcon fontSize="small" sx={{ mr: 1 }} />
-                    <Typography variant="body2">Dark</Typography>
+                    <DarkModeIcon sx={{ mr: 0.5, fontSize: '1rem' }} />
+                    <Typography variant="caption">Dark</Typography>
                   </Box>
                 }
               </Box>
@@ -527,8 +542,8 @@ const Header: React.FC = () => {
                   sx={{ 
                     display: 'flex',
                     alignItems: 'center',
-                    py: 1.5,
-                    px: 2,
+                    py: 0.75,
+                    px: 1.5,
                     bgcolor: theme === 'dark' ? '#f44336' : '#d32f2f',
                     color: '#ffffff',
                     borderRadius: 1,
@@ -538,7 +553,7 @@ const Header: React.FC = () => {
                     }
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                     Logout
                   </Typography>
                 </Box>
@@ -554,15 +569,15 @@ const Header: React.FC = () => {
                     sx={{ 
                       textDecoration: 'none',
                       color: 'inherit',
-                      py: 1.5,
-                      px: 2,
+                      py: 0.75,
+                      px: 1.5,
                       borderRadius: 1,
                       '&:hover': {
                         bgcolor: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
                       }
                     }}
                   >
-                    <Typography variant="body2">Login</Typography>
+                    <Typography variant="caption">Login</Typography>
                   </Box>
                   <Box 
                     component={RouterLink} 
@@ -570,8 +585,8 @@ const Header: React.FC = () => {
                     onClick={handleCloseMobileMenu}
                     sx={{ 
                       textDecoration: 'none',
-                      py: 1.5,
-                      px: 2,
+                      py: 0.75,
+                      px: 1.5,
                       bgcolor: theme === 'dark' ? '#1976d2' : '#2196f3',
                       color: '#ffffff',
                       borderRadius: 1,
@@ -580,7 +595,7 @@ const Header: React.FC = () => {
                       }
                     }}
                   >
-                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
                       Sign Up
                     </Typography>
                   </Box>
