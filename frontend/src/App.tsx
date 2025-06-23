@@ -26,8 +26,11 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AdminRoute from './components/AdminRoute';
 import { useTheme } from './context/ThemeContext';
+import useMobileTooltipEnhancer from './hooks/useMobileTooltipEnhancer';
 
 function StockAnalyzer() {
+  // Use the mobile tooltip enhancer hook
+  useMobileTooltipEnhancer();
   const [searchParams] = useSearchParams();
   const [ticker, setTicker] = useState('');
   const [loading, setLoading] = useState(false);

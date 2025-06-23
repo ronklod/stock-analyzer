@@ -15,12 +15,15 @@ import {
     Tooltip,
     Alert,
     Button,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommentIcon from '@mui/icons-material/Comment';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../utils/apiClient';
+import MobileNoteDialog from './MobileNoteDialog';
 
 interface WatchlistItem {
     id: number;
@@ -36,6 +39,15 @@ const WatchlistPage: React.FC = () => {
     const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // Mobile note dialog state
+    const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+    const [selectedNote, setSelectedNote] = useState<string | null>(null);
+    const [selectedSymbol, setSelectedSymbol] = useState<string>('');
+    
+    // Use theme and media query to detect mobile devices
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const fetchWatchlist = async () => {
         try {
@@ -66,6 +78,18 @@ const WatchlistPage: React.FC = () => {
         }
     };
     
+    // Handle opening note dialog on mobile
+    const handleOpenNoteDialog = (note: string | null, symbol: string) => {
+        setSelectedNote(note);
+        setSelectedSymbol(symbol);
+        setNoteDialogOpen(true);
+    };
+    
+    // Handle closing note dialog
+    const handleCloseNoteDialog = () => {
+        setNoteDialogOpen(false);
+    };
+    
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
         return <Navigate to="/login" />;
@@ -84,6 +108,12 @@ const WatchlistPage: React.FC = () => {
             <Typography variant="h4" component="h1" gutterBottom>
                 My Watchlist
             </Typography>
+
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
 
             {watchlist.length === 0 ? (
                 <Paper sx={{ p: 3, textAlign: 'center' }}>
@@ -117,11 +147,28 @@ const WatchlistPage: React.FC = () => {
                                     </TableCell>
                                     <TableCell>
                                         {item.notes ? (
-                                            <Tooltip title={item.notes} placement="top">
-                                                <IconButton size="small" sx={{ color: 'primary.main' }}>
+                                            isMobile ? (
+                                                // On mobile - clickable icon that opens dialog
+                                                <IconButton 
+                                                    size="small" 
+                                                    sx={{ color: 'primary.main' }}
+                                                    onClick={() => handleOpenNoteDialog(item.notes, item.symbol)}
+                                                    aria-label="View note"
+                                                >
                                                     <CommentIcon />
                                                 </IconButton>
-                                            </Tooltip>
+                                            ) : (
+                                                // On desktop - regular tooltip on hover
+                                                <Tooltip 
+                                                    title={item.notes} 
+                                                    placement="top" 
+                                                    arrow
+                                                >
+                                                    <IconButton size="small" sx={{ color: 'primary.main' }}>
+                                                        <CommentIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )
                                         ) : (
                                             '-'
                                         )}
@@ -141,6 +188,14 @@ const WatchlistPage: React.FC = () => {
                     </Table>
                 </TableContainer>
             )}
+
+            {/* Mobile-friendly note dialog */}
+            <MobileNoteDialog
+                open={noteDialogOpen}
+                onClose={handleCloseNoteDialog}
+                symbol={selectedSymbol}
+                note={selectedNote}
+            />
         </Container>
     );
 };
