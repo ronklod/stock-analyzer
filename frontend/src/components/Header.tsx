@@ -18,6 +18,7 @@ import {
   ClickAwayListener,
   MenuList
 } from '@mui/material';
+import LogoComponent from './LogoComponent';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -26,6 +27,8 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+
+// No need for logoUrl anymore as we're using LogoComponent
 
 // Add global styles for compact menu items
 const compactMenuItemStyle = {
@@ -84,7 +87,7 @@ const Header: React.FC = () => {
         padding: isMobile ? '0.5rem' : '0.5rem 1rem' // Reduce padding on mobile
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <TrendingUpIcon sx={{ fontSize: isMobile ? 28 : 32, mr: 1 }} />
+          <LogoComponent variant="white" width={isMobile ? 40 : 50} />
           <Typography 
             variant={isMobile ? "h6" : "h5"} 
             component="div" 
@@ -329,7 +332,7 @@ const Header: React.FC = () => {
                 alignItems: 'center',
                 color: theme === 'dark' ? '#ffffff' : 'inherit' 
               }}>
-                <TrendingUpIcon fontSize="small" sx={{ mr: 1.5 }} />
+                <LogoComponent variant="white" width={20} marginRight="12px" />
                 Analyzer
               </Box>
             </MenuItem>
