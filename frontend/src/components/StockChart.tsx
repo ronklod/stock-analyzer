@@ -137,7 +137,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
     'MACD': 'Moving Average Convergence Divergence (MACD) identifies trend changes. When the MACD line (blue) crosses above the signal line (red), it\'s a bullish signal. When it crosses below, it\'s bearish. The histogram shows the difference between these lines.',
     'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions. CCI helps identify trend reversals and extreme market conditions.',
     'Bollinger': 'Bollinger Bands measure volatility using standard deviations. When bands narrow, it indicates low volatility (squeeze). When price touches the upper band, it may be overbought; touching the lower band may indicate oversold conditions. The middle band is a 20-day moving average.',
-    'Demark': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. Buy signals (green triangles) appear after a sequence of lower closes, indicating a potential upward reversal. Sell signals (red triangles) appear after a sequence of higher closes, indicating a potential downward reversal.'
+    'Demark': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. Buy signals (green triangles) appear after a sequence of lower closes, indicating a potential upward reversal. Sell signals (red triangles) appear after a sequence of higher closes, indicating a potential downward reversal.',
+    'Support_resistance': 'Support and Resistance levels identify price points where a stock has historically struggled to move beyond (resistance) or fall below (support). These levels often act as psychological barriers for traders. When price breaks through a resistance level, that level may become a support level, and vice versa.'
   };
   
   // Force chart re-render when theme changes
@@ -1313,7 +1314,24 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   };
 
   // Function to render chart headers (without hooks)
+  // Helper function to get description text for an indicator
+  const getIndicatorDescription = (id: string): string => {
+    // Map chart IDs to their description keys
+    switch (id) {
+      case 'rsi': return indicatorDescriptions['RSI'];
+      case 'macd': return indicatorDescriptions['MACD'];
+      case 'cci': return indicatorDescriptions['CCI'];
+      case 'bollinger': return indicatorDescriptions['Bollinger'];
+      case 'demark': return indicatorDescriptions['Demark'];
+      case 'support_resistance': return indicatorDescriptions['Support_resistance'];
+      default: return 'No description available.';
+    }
+  };
+
   const renderChartHeader = (title: string, chartId: string) => {
+    // Determine if this is a chart that should have an info icon
+    const showInfoIcon = ['rsi', 'macd', 'cci', 'bollinger', 'demark', 'support_resistance'].includes(chartId);
+    
     return (
       <div style={{ 
         display: 'flex', 
@@ -1321,12 +1339,79 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         alignItems: 'center',
         marginBottom: '8px'
       }}>
-        <h3 style={{ 
-          fontSize: '16px', 
-          fontWeight: 600, 
-          margin: 0,
-          color: '#374151'
-        }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h3 style={{ 
+            fontSize: '16px', 
+            fontWeight: 600, 
+            margin: 0,
+            color: chartTheme.textColor
+          }}>{title}</h3>
+          
+          {showInfoIcon && (
+            <span 
+              className="info-icon"
+              onMouseEnter={() => setHoveredIndicator(chartId)}
+              onMouseLeave={() => setHoveredIndicator(null)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '16px',
+                height: '16px',
+                marginLeft: '6px',
+                backgroundColor: theme === 'dark' ? '#4b5563' : '#e5e7eb',
+                borderRadius: '50%',
+                cursor: 'help',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: theme === 'dark' ? '#d1d5db' : '#6b7280',
+                position: 'relative',
+              }}
+            >
+              i
+              {hoveredIndicator === chartId && (
+                <div
+                  className="tooltip"
+                  style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    marginBottom: '8px',
+                    padding: '8px 12px',
+                    backgroundColor: theme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(31, 41, 55, 0.95)',
+                    color: theme === 'dark' ? '#f1f5f9' : 'white',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    lineHeight: '1.4',
+                    width: '280px',
+                    textAlign: 'left',
+                    zIndex: 1000,
+                    boxShadow: theme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.4)' : '0 4px 6px rgba(0, 0, 0, 0.2)',
+                    fontWeight: 'normal',
+                  }}
+                >
+                  {getIndicatorDescription(chartId)}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '6px solid transparent',
+                      borderRight: '6px solid transparent',
+                      borderTop: theme === 'dark' 
+                        ? '6px solid rgba(15, 23, 42, 0.95)' 
+                        : '6px solid rgba(31, 41, 55, 0.95)',
+                    }}
+                  />
+                </div>
+              )}
+            </span>
+          )}
+        </div>
         
         <button
           onClick={() => setFullScreenChart(chartId)}
@@ -1620,36 +1705,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* Demark Indicator Chart */}
       {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '8px'
-          }}>
-            <h3 style={{ 
-              fontSize: '16px', 
-              fontWeight: 600, 
-              margin: 0,
-              color: '#374151'
-            }}>{ticker} - Demark Indicator Buy/Sell Signals</h3>
-            
-            <button
-              onClick={() => setFullScreenChart('demark')}
-              style={{
-                background: 'none',
-                border: '1px solid #e5e7eb',
-                borderRadius: '4px',
-                padding: '4px 12px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '12px',
-                color: '#6b7280',
-              }}
-            >
-              <span style={{ marginRight: '4px' }}>⛶</span> Expand
-            </button>
-          </div>
+          {renderChartHeader(`${ticker} - Demark Indicator Buy/Sell Signals`, 'demark')}
           <div className="chart-container" style={{ height: '400px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart 
               type='candlestick'
@@ -1739,36 +1795,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       {/* Support & Resistance Levels */}
       {supportResistanceLevels.length > 0 && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '8px'
-          }}>
-            <h3 style={{ 
-              fontSize: '16px', 
-              fontWeight: 600, 
-              margin: 0,
-              color: '#374151'
-            }}>{ticker} - Support & Resistance Levels</h3>
-            
-            <button
-              onClick={() => setFullScreenChart('support-resistance')}
-              style={{
-                background: 'none',
-                border: '1px solid #e5e7eb',
-                borderRadius: '4px',
-                padding: '4px 12px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '12px',
-                color: '#6b7280',
-              }}
-            >
-              <span style={{ marginRight: '4px' }}>⛶</span> Expand
-            </button>
-          </div>
+          {renderChartHeader(`${ticker} - Support & Resistance Levels`, 'support_resistance')}
           <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
             <Chart type='candlestick' data={supportResistanceData} options={supportResistanceOptions} />
           </div>
