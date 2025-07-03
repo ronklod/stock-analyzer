@@ -1002,6 +1002,31 @@ async def update_user_profile(
 if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_DIR, "static")), name="static")
     
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def serve_favicon():
+        """Serve the favicon.ico file"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "favicon.ico"))
+    
+    @app.get("/manifest.json", include_in_schema=False)
+    async def serve_manifest():
+        """Serve the manifest.json file"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "manifest.json"))
+    
+    @app.get("/logo.png", include_in_schema=False)
+    async def serve_logo():
+        """Serve the logo.png file"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "logo.png"))
+    
+    @app.get("/logo_white.png", include_in_schema=False)
+    async def serve_logo_white():
+        """Serve the logo_white.png file"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "logo_white.png"))
+    
+    @app.get("/favicon.png", include_in_schema=False)
+    async def serve_favicon_png():
+        """Serve the favicon.png file"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "favicon.png"))
+    
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa_paths(full_path: str):
         """Serve the SPA index.html for any unmatched routes"""
