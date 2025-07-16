@@ -20,6 +20,7 @@ from stock_analysis.stock_analyzer import StockAnalyzer
 from stock_analysis.nasdaq100_analyzer import NASDAQ100Screener
 from stock_analysis.sp500_analyzer import SP500Screener
 from stock_analysis.mag7_analyzer import MAG7Screener
+from groq_stock_analyzer import GroqStockAnalyzer
 from database.database import get_db, engine
 from database import WatchlistItem, User, UserPreference, Base, pwd_context
 from sqlalchemy.orm import Session
@@ -177,6 +178,24 @@ class TopStock(BaseModel):
     momentum20d: float
     attractivenessScore: float
     description: str
+
+# AI Analysis Models
+class AIAnalysisResponse(BaseModel):
+    ticker: str
+    overall_sentiment: str
+    confidence_score: str
+    investment_recommendation: str
+    price_target: Optional[str] = None
+    time_horizon: Optional[str] = None
+    key_strengths: List[str]
+    key_risks: List[str]
+    fundamental_analysis: str
+    technical_outlook: str
+    sector_analysis: Optional[str] = None
+    catalysts: Optional[List[str]] = None
+    concerns: Optional[List[str]] = None
+    summary: str
+    error: Optional[str] = None
 
 class ScreeningResponse(BaseModel):
     topStocks: List[TopStock]
@@ -371,6 +390,60 @@ async def analyze_stock(request: StockRequest, current_user: User = Depends(get_
     except Exception as e:
         logger.error(f"Error analyzing stock: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/analyze-ai", response_model=AIAnalysisResponse)
+async def analyze_stock_ai(request: StockRequest, current_user: User = Depends(get_current_user)):
+    """
+    Analyze a stock using Groq AI and return AI-powered analysis
+    """
+    ticker = request.ticker.upper()
+    
+    if not ticker:
+        raise HTTPException(status_code=400, detail="Ticker symbol is required")
+    
+    logger.info(f"Analyzing stock with AI: {ticker}")
+    
+    try:
+        # Create Groq analyzer instance
+        groq_analyzer = GroqStockAnalyzer()
+        
+        # Perform AI analysis
+        analysis_result = groq_analyzer.analyze_stock(ticker)
+        
+        # Check for errors in the analysis
+        if "error" in analysis_result:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"AI analysis failed: {analysis_result['error']}"
+            )
+        
+        # Prepare response with all the fields from analysis_result
+        response = AIAnalysisResponse(
+            ticker=ticker,
+            overall_sentiment=analysis_result.get('overall_sentiment', 'NEUTRAL'),
+            confidence_score=str(analysis_result.get('confidence_score', '5')),
+            investment_recommendation=analysis_result.get('investment_recommendation', 'HOLD'),
+            price_target=analysis_result.get('price_target'),
+            time_horizon=analysis_result.get('time_horizon'),
+            key_strengths=analysis_result.get('key_strengths', []),
+            key_risks=analysis_result.get('key_risks', []),
+            fundamental_analysis=analysis_result.get('fundamental_analysis', 'Not available'),
+            technical_outlook=analysis_result.get('technical_outlook', 'Not available'),
+            sector_analysis=analysis_result.get('sector_analysis'),
+            catalysts=analysis_result.get('catalysts'),
+            concerns=analysis_result.get('concerns'),
+            summary=analysis_result.get('summary', 'AI analysis completed'),
+            error=None
+        )
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in AI stock analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI analysis error: {str(e)}")
 
 def create_chart_data(analyzer) -> ChartData:
     """

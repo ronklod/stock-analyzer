@@ -124,6 +124,13 @@ const Header: React.FC = () => {
             Analyzer
           </Button>
           <Button 
+            component={RouterLink} 
+            to="/ai-analysis" 
+            sx={{ my: 2, color: 'white', display: 'block' }}
+          >
+            AI Analysis
+          </Button>
+          <Button 
             onClick={handleOpenScreenerMenu}
             sx={{ my: 2, color: 'white', display: 'flex', alignItems: 'center' }}
             endIcon={<ArrowDropDownIcon />}
@@ -334,6 +341,21 @@ const Header: React.FC = () => {
               }}>
                 <LogoComponent variant="white" width={20} marginRight="12px" />
                 Analyzer
+              </Box>
+            </MenuItem>
+            <MenuItem 
+              onClick={handleCloseMobileMenu} 
+              component={RouterLink} 
+              to="/ai-analysis"
+              sx={compactMenuItemStyle}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme === 'dark' ? '#ffffff' : 'inherit' 
+              }}>
+                <span role="img" aria-label="ai" style={{ marginRight: '12px' }}>🤖</span>
+                AI Analysis
               </Box>
             </MenuItem>
             <MenuItem 

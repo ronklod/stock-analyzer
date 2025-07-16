@@ -133,4 +133,23 @@ export interface ScreeningResponse {
   topStocks: TopStock[];
   totalAnalyzed: number;
   failedSymbols: string[];
+}
+
+// AI Analysis Types
+export interface AIAnalysisResponse {
+  ticker: string;
+  overall_sentiment: string;
+  confidence_score: string;
+  investment_recommendation: string;
+  price_target?: string;
+  time_horizon?: string;
+  key_strengths: string[];
+  key_risks: string[];
+  fundamental_analysis: string;
+  technical_outlook: string;
+  sector_analysis?: string;
+  catalysts?: string[];
+  concerns?: string[];
+  summary: string;
+  error?: string;
 } 

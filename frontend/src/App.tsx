@@ -22,6 +22,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
+import AIStockAnalyzer from './components/AIStockAnalyzer';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AdminRoute from './components/AdminRoute';
@@ -178,6 +179,9 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                   {/* Main analyzer route */}
                   <Route path="/" element={<StockAnalyzer />} />
+                  
+                  {/* AI analyzer route */}
+                  <Route path="/ai-analysis" element={<AIStockAnalyzer />} />
                   
                   {/* Screener routes */}
                   <Route path="/screener/nasdaq100" element={<StockScreener type="nasdaq100" />} />

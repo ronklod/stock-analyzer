@@ -95,6 +95,16 @@ export const useApi = () => {
   };
 
   /**
+   * Analyze stock using AI (Groq)
+   */
+  const analyzeStockAI = async (ticker: string) => {
+    return fetchWithAuth('/api/analyze-ai', {
+      method: 'POST',
+      body: JSON.stringify({ ticker }),
+    });
+  };
+
+  /**
    * Get stock screening results
    */
   const getScreeningResults = async (screenType: string) => {
@@ -107,6 +117,7 @@ export const useApi = () => {
     removeFromUserWatchlist,
     checkUserWatchlist,
     analyzeStock,
+    analyzeStockAI,
     getScreeningResults,
     fetchWithAuth,
   };
