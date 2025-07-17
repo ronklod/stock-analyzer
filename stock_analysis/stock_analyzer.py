@@ -29,6 +29,14 @@ from stock_analysis.demark_indicator import calculate_demark_indicator, prepare_
 # Load environment variables
 load_dotenv()
 
+# Import the Groq AI analyzer
+try:
+    from groq_stock_analyzer import GroqStockAnalyzer
+    AI_ANALYZER_AVAILABLE = True
+except ImportError:
+    AI_ANALYZER_AVAILABLE = False
+    print("Warning: GroqStockAnalyzer not available. AI analysis will be skipped.")
+
 class StockAnalyzer:
     def __init__(self, ticker):
         self.ticker = ticker.upper()
@@ -100,6 +108,29 @@ class StockAnalyzer:
         self.df = calculate_demark_indicator(self.df)
         
         return True
+    
+    def get_ai_analysis(self):
+        """Get AI analysis of the stock using Groq API"""
+        if not AI_ANALYZER_AVAILABLE:
+            return None
+        
+        try:
+            # Create Groq analyzer instance
+            groq_analyzer = GroqStockAnalyzer()
+            
+            # Perform AI analysis
+            analysis_result = groq_analyzer.analyze_stock(self.ticker)
+            
+            # Check for errors in the analysis
+            if "error" in analysis_result:
+                print(f"AI analysis failed: {analysis_result['error']}")
+                return None
+            
+            return analysis_result
+            
+        except Exception as e:
+            print(f"Error in AI stock analysis: {str(e)}")
+            return None
     
     def analyze_technical_signals(self):
         """Analyze technical indicators and generate signals"""
@@ -203,6 +234,36 @@ class StockAnalyzer:
                 bearish_count += 1.5
             else:
                 signals['Demark_Indicator'] = 'Neutral'
+        
+        # AI Analysis Integration
+        ai_analysis = self.get_ai_analysis()
+        if ai_analysis is not None:
+            try:
+                # Get AI recommendation and convert to signal
+                ai_recommendation = ai_analysis.get('investment_recommendation', 'HOLD').upper()
+                confidence_score = float(ai_analysis.get('confidence_score', '5'))
+                
+                # Convert AI recommendation to bullish/bearish signal with concise formatting
+                if ai_recommendation in ['BUY', 'STRONG BUY']:
+                    signals['AI_Analysis'] = f'Bullish (AI: {confidence_score:.1f}/10)'
+                    # Weight AI analysis based on confidence (1.5-3.0 range)
+                    ai_weight = 1.5 + (confidence_score / 10.0) * 1.5
+                    bullish_count += ai_weight
+                elif ai_recommendation in ['SELL', 'STRONG SELL']:
+                    signals['AI_Analysis'] = f'Bearish (AI: {confidence_score:.1f}/10)'
+                    # Weight AI analysis based on confidence (1.5-3.0 range)
+                    ai_weight = 1.5 + (confidence_score / 10.0) * 1.5
+                    bearish_count += ai_weight
+                else:  # HOLD
+                    signals['AI_Analysis'] = f'Neutral (AI: {confidence_score:.1f}/10)'
+                    # Add a small weight to neutral signals
+                    # No significant weight for neutral AI recommendations
+                    
+            except Exception as e:
+                signals['AI_Analysis'] = 'Error (AI analysis failed)'
+                print(f"Error processing AI analysis: {str(e)}")
+        else:
+            signals['AI_Analysis'] = 'Unavailable (AI service not accessible)'
         
         # Calculate technical score (-100 to 100)
         total_signals = bullish_count + bearish_count

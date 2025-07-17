@@ -55,11 +55,12 @@ const TechnicalAnalysisCard: React.FC<Props> = ({ technicalAnalysis, sentimentAn
     'MACD': 'Moving Average Convergence Divergence (MACD) identifies trend changes. When MACD crosses above the signal line, it\'s bullish. When it crosses below, it\'s bearish.',
     'Bollinger_Bands': 'Bollinger Bands measure volatility. Price touching the upper band suggests overbought conditions, while touching the lower band suggests oversold conditions.',
     'CCI': 'Commodity Channel Index (CCI) identifies cyclical trends. Values above +100 indicate overbought conditions, while values below -100 indicate oversold conditions.',
-    'Demark_Indicator': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. A buy signal occurs after 9 consecutive closes lower than the close 4 bars earlier, indicating a potential upward reversal. A sell signal occurs after 9 consecutive closes higher than the close 4 bars earlier, indicating a potential downward reversal.'
+    'Demark_Indicator': 'The Demark Indicator identifies potential price exhaustion points and trend reversals. A buy signal occurs after 9 consecutive closes lower than the close 4 bars earlier, indicating a potential upward reversal. A sell signal occurs after 9 consecutive closes higher than the close 4 bars earlier, indicating a potential downward reversal.',
+    'AI_Analysis': 'AI-powered comprehensive stock analysis using advanced machine learning models. The AI analyzes fundamental data, technical patterns, market sentiment, and sector trends to provide investment recommendations with confidence scores. This combines multiple analytical approaches into a single actionable signal.'
   };
 
   const shouldShowInfo = (indicator: string) => {
-    return ['RSI', 'MACD', 'Bollinger_Bands', 'CCI', 'Demark_Indicator'].includes(indicator);
+    return ['RSI', 'MACD', 'Bollinger_Bands', 'CCI', 'Demark_Indicator', 'AI_Analysis'].includes(indicator);
   };
 
   const formatDate = (dateStr: string) => {
