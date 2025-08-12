@@ -29,7 +29,7 @@ Thumbs.db
 # Data files
 *.csv
 *.xlsx
-*.json
+#*.json
 data/
 
 # Logs

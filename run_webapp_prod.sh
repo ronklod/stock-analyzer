@@ -32,7 +32,14 @@ echo "App will run on http://localhost:5001"
 echo "API Documentation available at http://localhost:5001/docs"
 echo ""
 
-python app_fastapi.py
+# Activate virtual environment and run FastAPI
+if [ -d "venv" ]; then
+    source venv/bin/activate
+    python app_fastapi.py
+else
+    echo "⚠️  Python virtual environment not found. Please create it with: python3.11 -m venv venv"
+    exit 1
+fi
 
 echo ""
 echo "Server stopped."
