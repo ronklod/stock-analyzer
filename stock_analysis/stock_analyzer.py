@@ -25,13 +25,14 @@ from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings('ignore')
 from stock_analysis.demark_indicator import calculate_demark_indicator, prepare_demark_data
+from stock_analysis.groq_stock_analyzer import GroqStockAnalyzer
 
 # Load environment variables
 load_dotenv()
 
 # Import the Groq AI analyzer
 try:
-    from groq_stock_analyzer import GroqStockAnalyzer
+    from stock_analysis.groq_stock_analyzer import GroqStockAnalyzer
     AI_ANALYZER_AVAILABLE = True
 except ImportError:
     AI_ANALYZER_AVAILABLE = False

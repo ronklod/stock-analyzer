@@ -61,7 +61,7 @@ const zoomOptions = {
     wheel: {
       enabled: true,
       speed: 0.05,
-      modifierKey: null,
+      modifierKey: undefined, // Changed from null to undefined
     },
     pinch: {
       enabled: true,
@@ -74,7 +74,7 @@ const zoomOptions = {
   pan: {
     enabled: true,
     mode: 'xy' as const,
-    modifierKey: null,
+    modifierKey: undefined, // Changed from null to undefined
     speed: 1.5,
     threshold: 1,
     onPanStart: function(event: any) {
@@ -82,17 +82,19 @@ const zoomOptions = {
       if (target) {
         target.style.cursor = 'grabbing';
       }
+      return undefined; // Explicitly return undefined
     },
     onPanComplete: function(event: any) {
       const target = event.chart.canvas;
       if (target) {
         target.style.cursor = 'grab';
       }
+      return undefined; // Explicitly return undefined
     },
   },
   limits: {
-    x: {min: 'original', max: 'original'},
-    y: {min: 'original', max: 'original'},
+    x: {min: undefined, max: undefined}, // Changed from 'original' to undefined
+    y: {min: undefined, max: undefined},
   },
 };
 
@@ -672,9 +674,12 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
       filteredData.ohlc.close
     ) : { buyPoints: [], sellPoints: [] };
 
-  // Add Demark signals to chart data after processing
-  // We no longer need this code block as Demark signals are now added directly in the dedicated chart
-  // Removing reference to non-existent mainChartData
+  // Note: don't treat the app-level `ChartData` (dates/ohlc/indicators) as Chart.js data.
+  // Chart.js data objects are created locally (e.g. `priceData`, `volumeData`, etc.).
+
+  // Safely access demark signals with fallback values
+  const demarkBuySignals = filteredData.indicators?.demarkBuySignals ?? [];
+  const demarkSellSignals = filteredData.indicators?.demarkSellSignals ?? [];
 
   // Demark chart options
   const demarkChartOptions: ChartOptions<any> = {
@@ -1509,6 +1514,48 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
   const responsiveCciOptions = generateResponsiveOptions(cciOptions);
   const responsiveBolingerOptions = generateResponsiveOptions(bollingerOptions);
 
+  // Validate chart data
+  const validateChartData = (data: ChartData): boolean => {
+    if (!data || !data.dates || !data.ohlc || !data.volume) {
+      console.error('Invalid chart data:', data);
+      return false;
+    }
+    return true;
+  };
+
+  // Chart options with animations disabled
+  const chartOptions: ChartOptions<'line' | 'candlestick'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false, // Disable animations
+    plugins: {
+      legend: {
+        display: true,
+      },
+      tooltip: {
+        enabled: true,
+      },
+      zoom: zoomOptions,
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+        },
+      },
+      y: {
+        beginAtZero: false,
+      },
+    },
+  };
+
+  // Validate app chart data early and return an error placeholder if invalid.
+  if (!validateChartData(chartData)) {
+    console.error('Chart data validation failed.');
+    return <div>Error loading chart. Please try again later.</div>;
+  }
+
   return (
     <div className="charts-container">
       <style>
@@ -1624,6 +1671,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             data={priceData} 
             options={{
               ...responsivePriceOptions,
+              animation: false,
               onHover: (event: any, elements: any) => {
                 const target = event.native?.target as HTMLElement;
                 if (target) {
@@ -1646,7 +1694,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
           <Chart 
             type='bar' 
             data={volumeData} 
-            options={responsiveVolumeOptions} 
+            options={{ ...responsiveVolumeOptions, animation: false }} 
           />
         </div>
       </div>
@@ -1660,6 +1708,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
               data={rsiData} 
               options={{
                 ...rsiOptions,
+                animation: false,
                 onHover: (event: any, elements: any) => {
                   const target = event.native?.target as HTMLElement;
                   if (target) {
@@ -1677,7 +1726,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - MACD (Moving Average Convergence Divergence)`, 'macd')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='bar' data={macdData} options={responsiveMacdOptions} />
+            <Chart type='bar' data={macdData} options={{ ...responsiveMacdOptions, animation: false }} />
           </div>
         </div>
       )}
@@ -1687,7 +1736,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - CCI (Commodity Channel Index)`, 'cci')}
           <div className="chart-container" style={{ height: '200px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='line' data={cciData} options={responsiveCciOptions} />
+            <Chart type='line' data={cciData} options={{ ...responsiveCciOptions, animation: false }} />
           </div>
         </div>
       )}
@@ -1697,13 +1746,13 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - Bollinger Bands`, 'bollinger')}
           <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='line' data={bollingerData} options={responsiveBolingerOptions} />
+            <Chart type='line' data={bollingerData} options={{ ...responsiveBolingerOptions, animation: false }} />
           </div>
         </div>
       )}
       
       {/* Demark Indicator Chart */}
-      {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
+      {((demarkBuySignals.length > 0) || (demarkSellSignals.length > 0)) && (
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - Demark Indicator Buy/Sell Signals`, 'demark')}
           <div className="chart-container" style={{ height: '400px', ...chartContainerStyle, cursor: 'grab' }}>
@@ -1738,7 +1787,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     label: 'Demark Sell Signal',
                     data: demarkSignals.sellPoints,
                     backgroundColor: 'rgba(239, 68, 68, 1)',
-                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderColor: 'rgba(239, 68, 68, 1)', // Removed duplicate property
                     pointStyle: 'triangle',
                     rotation: 180,
                     pointRadius: 10,
@@ -1750,6 +1799,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
               }}
               options={{
                 ...demarkChartOptions,
+                animation: false,
                 plugins: {
                   ...demarkChartOptions.plugins,
                   title: {
@@ -1797,7 +1847,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         <div className="chart-wrapper" style={{ marginTop: '2rem' }}>
           {renderChartHeader(`${ticker} - Support & Resistance Levels`, 'support_resistance')}
           <div className="chart-container" style={{ height: '300px', ...chartContainerStyle, cursor: 'grab' }}>
-            <Chart type='candlestick' data={supportResistanceData} options={supportResistanceOptions} />
+            <Chart type='candlestick' data={supportResistanceData} options={{ ...supportResistanceOptions, animation: false }} />
           </div>
         </div>
       )}
@@ -1979,8 +2029,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
         </FullScreenModal>
       )}
 
-      {((filteredData.indicators.demarkBuySignals && filteredData.indicators.demarkBuySignals.length > 0) || 
-        (filteredData.indicators.demarkSellSignals && filteredData.indicators.demarkSellSignals.length > 0)) && (
+      {((demarkBuySignals.length > 0) || (demarkSellSignals.length > 0)) && (
         <FullScreenModal 
           isOpen={fullScreenChart === 'demark'}
           title={`${ticker} - Demark Indicator Buy/Sell Signals`}
@@ -2018,7 +2067,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                     label: 'Demark Sell Signal',
                     data: demarkSignals.sellPoints,
                     backgroundColor: 'rgba(239, 68, 68, 1)',
-                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderColor: 'rgba(239, 68, 68, 1)', // Removed duplicate property
                     pointStyle: 'triangle',
                     rotation: 180,
                     pointRadius: 10,
@@ -2028,7 +2077,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
                   }] : [])
                 ]
               }}
-              options={demarkChartOptions}
+              options={{ ...demarkChartOptions, animation: false }}
             />
           </div>
         </FullScreenModal>
@@ -2036,7 +2085,8 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
 
       {supportResistanceLevels.length > 0 && (
         <FullScreenModal 
-          isOpen={fullScreenChart === 'support-resistance'}
+          
+          isOpen={fullScreenChart === 'support_resistance'}
           title={`${ticker} - Support & Resistance Levels`}
           onClose={() => setFullScreenChart(null)}
         >
@@ -2044,7 +2094,7 @@ const StockChart: React.FC<Props> = ({ chartData, ticker, supportResistanceLevel
             <Chart 
               type='candlestick'
               data={supportResistanceData}
-              options={supportResistanceOptions}
+              options={{ ...supportResistanceOptions, animation: false }}
             />
           </div>
         </FullScreenModal>

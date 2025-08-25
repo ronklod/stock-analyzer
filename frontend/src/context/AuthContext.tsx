@@ -22,6 +22,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5001';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -100,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper function to get user data including admin status
   const fetchUserData = async (authToken: string) => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(SERVER_URL + '/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -126,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       formData.append('username', email);  // FastAPI expects 'username'
       formData.append('password', password);
       
-      const response = await fetch('/api/auth/token', {
+      const response = await fetch(SERVER_URL + '/api/auth/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -179,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(SERVER_URL + '/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initiateGoogleLogin = async () => {
     try {
       // Get Google login URL from backend
-      const response = await fetch('/api/auth/google/login');
+      const response = await fetch(SERVER_URL + '/api/auth/google/login');
       const data = await response.json();
       
       // Redirect to Google's OAuth page
@@ -239,7 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      const response = await fetch('/api/auth/change-password', {
+      const response = await fetch(SERVER_URL + '/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +270,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      const response = await fetch('/api/auth/update-profile', {
+      const response = await fetch(SERVER_URL + '/api/auth/update-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

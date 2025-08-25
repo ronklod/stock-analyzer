@@ -20,7 +20,7 @@ from stock_analysis.stock_analyzer import StockAnalyzer
 from stock_analysis.nasdaq100_analyzer import NASDAQ100Screener
 from stock_analysis.sp500_analyzer import SP500Screener
 from stock_analysis.mag7_analyzer import MAG7Screener
-from groq_stock_analyzer import GroqStockAnalyzer
+from stock_analysis.groq_stock_analyzer import GroqStockAnalyzer
 from database.database import get_db, engine
 from database import WatchlistItem, User, UserPreference, Base, pwd_context
 from sqlalchemy.orm import Session

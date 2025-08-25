@@ -76,6 +76,14 @@ const StockScreener: React.FC<Props> = ({ type }) => {
     }
   };
 
+  // Ensure color values are valid strings
+  const getColor = (value: number | undefined): string => {
+    if (typeof value === 'number') {
+      return value > 0 ? '#10b981' : '#ef4444';
+    }
+    return '#666'; // Default fallback color
+  };
+
   // Safely render a stock card
   const renderStockCard = (stock: TopStock, index: number) => {
     try {
@@ -106,7 +114,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
             <div className="metric">
               <span className="metric-label">Momentum</span>
               <span className="metric-value" style={{
-                color: (stock.momentum20d || 0) > 0 ? '#10b981' : '#ef4444'
+                color: getColor(stock.momentum20d),
               }}>
                 {safeRenderNumber(stock.momentum20d, (val) => `${val > 0 ? '+' : ''}${val.toFixed(2)}%`)}
               </span>
@@ -226,7 +234,7 @@ const StockScreener: React.FC<Props> = ({ type }) => {
             <div className="metric">
               <span className="metric-label">20D Momentum</span>
               <span className="metric-value" style={{
-                color: (stock.momentum20d || 0) > 0 ? '#10b981' : '#ef4444'
+                color: getColor(stock.momentum20d),
               }}>
                 {safeRenderNumber(stock.momentum20d, (val) => `${val > 0 ? '+' : ''}${val.toFixed(2)}%`)}
               </span>

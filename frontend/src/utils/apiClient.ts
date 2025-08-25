@@ -20,6 +20,10 @@ export const useApi = () => {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     };
 
+    url = (process.env.REACT_APP_SERVER_URL || 'http://localhost:500111') + url;
+console.log('ron klod - Using SERVER_URL:', process.env);
+
+    console.log('ron klod - Making API request to:', url);
     const response = await fetch(url, {
       ...options,
       headers: headersInit,
