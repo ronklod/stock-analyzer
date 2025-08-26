@@ -510,7 +510,7 @@ async def health_check(current_user: User = Depends(get_current_user)):
 @app.get("/api/screen/nasdaq100", response_model=ScreeningResponse)
 async def screen_nasdaq100(current_user: User = Depends(get_current_user)):
     """
-    Screen all NASDAQ-100 stocks and return the top 10 most attractive ones
+    Screen all NASDAQ-100 stocks and return the top 20 most attractive ones
     """
     logger.info("Starting NASDAQ-100 screening...")
     
@@ -559,7 +559,7 @@ async def screen_nasdaq100(current_user: User = Depends(get_current_user)):
 @app.get("/api/screen/sp500", response_model=ScreeningResponse)
 async def screen_sp500(current_user: User = Depends(get_current_user)):
     """
-    Screen all S&P 500 stocks and return the top 10 most attractive ones
+    Screen all S&P 500 stocks and return the top 20 most attractive ones
     """
     logger.info("Starting S&P 500 screening...")
     

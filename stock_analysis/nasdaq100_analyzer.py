@@ -34,7 +34,8 @@ class NASDAQ100Screener:
         """Analyze a single stock and return its score"""
         try:
             print(f"Analyzing {symbol}...")
-            analyzer = StockAnalyzer(symbol)
+            # Disable AI calls during bulk screener runs for speed and rate limits
+            analyzer = StockAnalyzer(symbol, use_ai=False)
             
             # Fetch stock data
             if not analyzer.fetch_stock_data():
@@ -158,9 +159,9 @@ class NASDAQ100Screener:
         if self.failed_symbols:
             print(f"Failed to analyze: {', '.join(self.failed_symbols)}")
         
-        return self.results[:10]  # Return top 10
+        return self.results[:20]  # Return top 20
     
-    def get_top_stocks(self, n=10):
+    def get_top_stocks(self, n=20):
         """Get top N stocks by attractiveness score"""
         return self.results[:n]
     
@@ -180,7 +181,7 @@ def main():
     
     # Display results
     print("\n" + "="*80)
-    print("TOP 10 MOST ATTRACTIVE NASDAQ-100 STOCKS")
+    print("TOP 20 MOST ATTRACTIVE NASDAQ-100 STOCKS")
     print("="*80 + "\n")
     
     for i, stock in enumerate(top_stocks, 1):

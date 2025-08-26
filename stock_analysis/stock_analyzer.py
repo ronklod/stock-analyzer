@@ -39,13 +39,15 @@ except ImportError:
     print("Warning: GroqStockAnalyzer not available. AI analysis will be skipped.")
 
 class StockAnalyzer:
-    def __init__(self, ticker):
+    def __init__(self, ticker, use_ai: bool = True):
         self.ticker = ticker.upper()
         self.stock = yf.Ticker(self.ticker)
         self.df = None
         self.news_sentiment = 0
         self.technical_score = 0
         self.recommendation = None
+        # Flag to control whether to call the external AI analyzer (Groq)
+        self.use_ai = use_ai
         
     def fetch_stock_data(self, period="1y"):
         """Fetch historical stock data"""
@@ -112,7 +114,9 @@ class StockAnalyzer:
     
     def get_ai_analysis(self):
         """Get AI analysis of the stock using Groq API"""
-        if not AI_ANALYZER_AVAILABLE:
+        # Respect both availability and the instance-level flag to avoid
+        # making external AI calls during bulk/screener runs.
+        if not AI_ANALYZER_AVAILABLE or not getattr(self, 'use_ai', True):
             return None
         
         try:

@@ -31,7 +31,8 @@ class MAG7Screener:
         """Analyze a single stock and return its score"""
         try:
             print(f"Analyzing {symbol}...")
-            analyzer = StockAnalyzer(symbol)
+            # Disable AI calls during bulk screener runs for speed and to avoid rate limits
+            analyzer = StockAnalyzer(symbol, use_ai=False)
             
             # Fetch stock data
             if not analyzer.fetch_stock_data():
